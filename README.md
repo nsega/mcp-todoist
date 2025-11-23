@@ -132,6 +132,155 @@ Add the following to your Claude Desktop configuration file:
 
 Replace `/path/to/mcp-todoist` with the actual path to your built binary.
 
+## Using the Todoist Tools
+
+Once configured with Claude Desktop or another MCP client, you can interact with your Todoist tasks using natural language. Here are comprehensive examples for each tool:
+
+### Creating Tasks
+
+**Simple task:**
+```
+Create a task "Buy groceries"
+```
+
+**Task with description:**
+```
+Create a task "Review PR #123" with description "Check code quality and test coverage"
+```
+
+**Task with due date:**
+```
+Create a task "Team meeting" due tomorrow
+```
+
+**High priority task with all details:**
+```
+Create a high priority task "Deploy to production" with description "Deploy v2.0.0 release" due next Friday
+```
+
+**Priority levels:**
+- Priority 1 (normal/default)
+- Priority 2 (medium)
+- Priority 3 (high)
+- Priority 4 (urgent)
+
+### Getting Tasks
+
+**Get all tasks (default limit 10):**
+```
+Show me my tasks
+```
+
+**Get tasks with custom limit:**
+```
+Show me 20 tasks
+```
+
+**Filter by priority:**
+```
+Show me all priority 4 tasks
+```
+
+**Filter by due date:**
+```
+Show me tasks due today
+Show me tasks due this week
+Show me overdue tasks
+```
+
+**Combine filters:**
+```
+Show me high priority tasks due tomorrow
+```
+
+**Get tasks for a specific project:**
+```
+Show me tasks in project ID 2203306141
+```
+
+### Updating Tasks
+
+**Update task name:**
+```
+Update the task "Buy groceries" to "Buy groceries and supplies"
+```
+
+**Change due date:**
+```
+Update the "Team meeting" task to be due next Monday
+```
+
+**Change priority:**
+```
+Update the "Deploy to production" task to priority 4
+```
+
+**Update multiple fields:**
+```
+Update the "Review PR" task with new description "Focus on security aspects" and make it due tomorrow with priority 3
+```
+
+**Note:** Task updates use partial name matching, so you only need to include enough of the task name to uniquely identify it.
+
+### Completing Tasks
+
+**Complete a task:**
+```
+Mark the "Buy groceries" task as complete
+Complete the task "Team meeting"
+```
+
+**Partial name matching:**
+```
+Complete the "groceries" task
+```
+
+This will find and complete any task containing "groceries" in the name.
+
+### Deleting Tasks
+
+**Delete a task:**
+```
+Delete the "Old task" task
+Remove the task "Cancelled meeting"
+```
+
+**Partial name matching:**
+```
+Delete the task containing "old"
+```
+
+**Note:** Like updates and completions, deletions use partial name matching for convenience.
+
+### Natural Language Examples
+
+The server is designed to work with natural language queries through Claude:
+
+```
+"Add a new task to buy milk tomorrow"
+→ Creates task "Buy milk" due tomorrow
+
+"What are my urgent tasks?"
+→ Shows all priority 4 tasks
+
+"I finished the documentation task"
+→ Marks task containing "documentation" as complete
+
+"Move my meeting to next week"
+→ Updates the task containing "meeting" with new due date
+
+"I don't need that old PR task anymore"
+→ Deletes task containing "old PR"
+```
+
+### Tips for Best Results
+
+1. **Be specific with task names** - When creating tasks, use clear, descriptive names for easier searching later
+2. **Use partial matching wisely** - You can update/complete/delete tasks using just part of the name, but make sure it's unique enough
+3. **Natural dates work** - Use phrases like "tomorrow", "next Monday", "in 3 days", "Jan 23"
+4. **Priority is optional** - If you don't specify priority, tasks default to priority 1 (normal)
+5. **Filters are flexible** - Combine multiple filters (priority, date, project) to find exactly what you need
+
 ## Development
 
 ### Building
