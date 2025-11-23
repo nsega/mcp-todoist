@@ -66,7 +66,7 @@ Removes tasks by name with confirmation messages.
 
 ## Prerequisites
 
-- Go 1.23 or later
+- Go 1.25.4 or later
 - A Todoist account
 - Todoist API token
 
