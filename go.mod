@@ -1,6 +1,6 @@
 module github.com/nsega/mcp-todoist
 
-go 1.24.7
+go 1.25.1
 
 require github.com/modelcontextprotocol/go-sdk v1.3.0
 
