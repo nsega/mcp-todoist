@@ -18,6 +18,12 @@ type Client struct {
 	httpClient *http.Client
 }
 
+// PaginatedResponse wraps list endpoints in the Todoist API v1.
+type PaginatedResponse[T any] struct {
+	Results    []T    `json:"results"`
+	NextCursor string `json:"next_cursor"`
+}
+
 // Option configures a Client.
 type Option func(*Client)
 
