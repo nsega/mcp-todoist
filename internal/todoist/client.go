@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-const defaultBaseURL = "https://api.todoist.com/rest/v2"
+const defaultBaseURL = "https://api.todoist.com/api/v1"
 
-// Client is an HTTP client for the Todoist REST API v2.
+// Client is an HTTP client for the Todoist API v1.
 type Client struct {
 	token      string
 	baseURL    string
