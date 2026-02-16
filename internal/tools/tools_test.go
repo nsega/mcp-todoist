@@ -80,8 +80,8 @@ func setupTest(t *testing.T, rt *router) (*mcp.ClientSession, func()) {
 	}
 
 	cleanup := func() {
-		cSession.Close()
-		sSession.Close()
+		_ = cSession.Close()
+		_ = sSession.Close()
 		apiSrv.Close()
 	}
 	return cSession, cleanup
