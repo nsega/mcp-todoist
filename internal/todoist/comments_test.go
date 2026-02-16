@@ -13,7 +13,7 @@ func TestGetComments(t *testing.T) {
 		if q := r.URL.Query().Get("task_id"); q != "42" {
 			t.Errorf("task_id = %q", q)
 		}
-		_, _ = w.Write([]byte(`[{"id":"c1","content":"A comment","task_id":"42"}]`))
+		_, _ = w.Write([]byte(`{"results":[{"id":"c1","content":"A comment","task_id":"42"}],"next_cursor":""}`))
 	})
 	defer srv.Close()
 

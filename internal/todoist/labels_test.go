@@ -10,7 +10,7 @@ func TestGetLabels(t *testing.T) {
 		if r.URL.Path != "/labels" {
 			t.Errorf("path = %s", r.URL.Path)
 		}
-		_, _ = w.Write([]byte(`[{"id":"l1","name":"urgent"}]`))
+		_, _ = w.Write([]byte(`{"results":[{"id":"l1","name":"urgent"}],"next_cursor":""}`))
 	})
 	defer srv.Close()
 

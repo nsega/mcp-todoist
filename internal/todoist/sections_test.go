@@ -13,7 +13,7 @@ func TestGetSections(t *testing.T) {
 		if q := r.URL.Query().Get("project_id"); q != "123" {
 			t.Errorf("project_id = %q", q)
 		}
-		_, _ = w.Write([]byte(`[{"id":"s1","name":"Backlog","project_id":"123"}]`))
+		_, _ = w.Write([]byte(`{"results":[{"id":"s1","name":"Backlog","project_id":"123"}],"next_cursor":""}`))
 	})
 	defer srv.Close()
 
