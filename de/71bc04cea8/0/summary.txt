@@ -1,0 +1,6 @@
+As expected — the running MCP server is still using the old binary. You need to restart it:
+
+1. Run `/mcp` in Claude Code
+2. Select `todoist` and restart it
+
+After restarting, the tools will use the new `api/v1` base URL and should work. Want me to commit and push this update to the PR first?

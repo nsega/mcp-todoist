@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "de71bc04cea8",
+  "session_id": "fdd49a8e-d936-4a3f-99fd-d1ce23f3b09c",
+  "strategy": "auto-commit",
+  "created_at": "2026-02-16T10:46:33.991849Z",
+  "branch": "fix/migrate-todoist-api-v1",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "README.md"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "af935cf1-ac3f-4504-9cf4-747e3e10a34e",
+  "checkpoint_transcript_start": 360,
+  "transcript_lines_at_start": 360,
+  "token_usage": {
+    "input_tokens": 8,
+    "cache_creation_tokens": 1403,
+    "cache_read_tokens": 337460,
+    "output_tokens": 56,
+    "api_call_count": 6
+  }
+}
