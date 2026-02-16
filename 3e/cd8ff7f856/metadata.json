@@ -1,0 +1,17 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "3ecd8ff7f856",
+  "strategy": "auto-commit",
+  "branch": "fix/migrate-todoist-api-v1",
+  "checkpoints_count": 0,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/3e/cd8ff7f856/0/metadata.json",
+      "transcript": "/3e/cd8ff7f856/0/full.jsonl",
+      "context": "",
+      "content_hash": "/3e/cd8ff7f856/0/content_hash.txt",
+      "prompt": ""
+    }
+  ]
+}
