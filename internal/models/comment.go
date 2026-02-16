@@ -9,4 +9,6 @@ type Comment struct {
 	ProjectID string    `json:"project_id,omitempty"`
 	Content   string    `json:"content"`
 	PostedAt  time.Time `json:"posted_at"`
+	PostedUID string    `json:"posted_uid,omitempty"`
+	IsDeleted bool      `json:"is_deleted,omitempty"`
 }
