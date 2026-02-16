@@ -14,11 +14,11 @@ func (c *Client) GetLabels() ([]models.Label, error) {
 		return nil, err
 	}
 
-	var labels []models.Label
-	if err := json.Unmarshal(data, &labels); err != nil {
+	var page PaginatedResponse[models.Label]
+	if err := json.Unmarshal(data, &page); err != nil {
 		return nil, fmt.Errorf("failed to parse labels: %w", err)
 	}
-	return labels, nil
+	return page.Results, nil
 }
 
 // CreateLabel creates a new personal label.

@@ -22,11 +22,11 @@ func (c *Client) GetComments(taskID, projectID string) ([]models.Comment, error)
 		return nil, err
 	}
 
-	var comments []models.Comment
-	if err := json.Unmarshal(data, &comments); err != nil {
+	var page PaginatedResponse[models.Comment]
+	if err := json.Unmarshal(data, &page); err != nil {
 		return nil, fmt.Errorf("failed to parse comments: %w", err)
 	}
-	return comments, nil
+	return page.Results, nil
 }
 
 // CreateComment creates a new comment.
