@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "0c46847d9b72",
+  "strategy": "auto-commit",
+  "branch": "feat/full-gtd-workflow",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "main.go"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0c/46847d9b72/0/metadata.json",
+      "transcript": "/0c/46847d9b72/0/full.jsonl",
+      "context": "",
+      "content_hash": "/0c/46847d9b72/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 6,
+    "cache_creation_tokens": 708,
+    "cache_read_tokens": 131802,
+    "output_tokens": 41,
+    "api_call_count": 4
+  }
+}

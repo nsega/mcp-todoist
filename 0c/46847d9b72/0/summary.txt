@@ -1,0 +1,8 @@
+I added a comment to `main.go`. Now check if entire tracked it:
+
+```bash
+entire status
+git log --oneline -5
+```
+
+If auto-commit is working, you should see a new commit created by entire. After confirming, I'll revert the test change.
