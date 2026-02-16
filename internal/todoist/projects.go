@@ -14,11 +14,11 @@ func (c *Client) GetProjects() ([]models.Project, error) {
 		return nil, err
 	}
 
-	var projects []models.Project
-	if err := json.Unmarshal(data, &projects); err != nil {
+	var page PaginatedResponse[models.Project]
+	if err := json.Unmarshal(data, &page); err != nil {
 		return nil, fmt.Errorf("failed to parse projects: %w", err)
 	}
-	return projects, nil
+	return page.Results, nil
 }
 
 // GetProject returns a single project by ID.

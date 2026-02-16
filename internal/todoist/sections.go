@@ -19,11 +19,11 @@ func (c *Client) GetSections(projectID string) ([]models.Section, error) {
 		return nil, err
 	}
 
-	var sections []models.Section
-	if err := json.Unmarshal(data, &sections); err != nil {
+	var page PaginatedResponse[models.Section]
+	if err := json.Unmarshal(data, &page); err != nil {
 		return nil, fmt.Errorf("failed to parse sections: %w", err)
 	}
-	return sections, nil
+	return page.Results, nil
 }
 
 // CreateSection creates a new section.

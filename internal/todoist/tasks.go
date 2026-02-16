@@ -27,11 +27,11 @@ func (c *Client) GetTasks(projectID, filter string) ([]models.Task, error) {
 		return nil, err
 	}
 
-	var tasks []models.Task
-	if err := json.Unmarshal(data, &tasks); err != nil {
+	var page PaginatedResponse[models.Task]
+	if err := json.Unmarshal(data, &page); err != nil {
 		return nil, fmt.Errorf("failed to parse tasks: %w", err)
 	}
-	return tasks, nil
+	return page.Results, nil
 }
 
 // GetTask returns a single task by ID.

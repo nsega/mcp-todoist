@@ -131,7 +131,7 @@ func TestCreateTaskTool(t *testing.T) {
 func TestGetTasksTool(t *testing.T) {
 	rt := newRouter()
 	rt.handle("GET", "/tasks", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`[{"id":"1","content":"Task A","priority":1},{"id":"2","content":"Task B","priority":3}]`))
+		_, _ = w.Write([]byte(`{"results":[{"id":"1","content":"Task A","priority":1},{"id":"2","content":"Task B","priority":3}],"next_cursor":""}`))
 	})
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
@@ -163,7 +163,7 @@ func TestCompleteTaskTool_byID(t *testing.T) {
 func TestDeleteTaskTool_notFound(t *testing.T) {
 	rt := newRouter()
 	rt.handle("GET", "/tasks", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`[]`))
+		_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
 	})
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
@@ -201,7 +201,7 @@ func TestReopenTaskTool(t *testing.T) {
 func TestGetProjectsTool(t *testing.T) {
 	rt := newRouter()
 	rt.handle("GET", "/projects", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`[{"id":"p1","name":"Work"},{"id":"p2","name":"Personal","is_inbox_project":true}]`))
+		_, _ = w.Write([]byte(`{"results":[{"id":"p1","name":"Work"},{"id":"p2","name":"Personal","inbox_project":true}],"next_cursor":""}`))
 	})
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
@@ -250,7 +250,7 @@ func TestDeleteProjectTool(t *testing.T) {
 func TestGetLabelsTool(t *testing.T) {
 	rt := newRouter()
 	rt.handle("GET", "/labels", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`[{"id":"l1","name":"waiting","is_favorite":true}]`))
+		_, _ = w.Write([]byte(`{"results":[{"id":"l1","name":"waiting","is_favorite":true}],"next_cursor":""}`))
 	})
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
@@ -283,7 +283,7 @@ func TestCreateLabelTool(t *testing.T) {
 func TestGetSectionsTool(t *testing.T) {
 	rt := newRouter()
 	rt.handle("GET", "/sections", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`[{"id":"s1","name":"Backlog","project_id":"p1"}]`))
+		_, _ = w.Write([]byte(`{"results":[{"id":"s1","name":"Backlog","project_id":"p1"}],"next_cursor":""}`))
 	})
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
@@ -334,7 +334,7 @@ func TestCreateCommentTool(t *testing.T) {
 func TestGetCommentsTool(t *testing.T) {
 	rt := newRouter()
 	rt.handle("GET", "/comments", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`[{"id":"c1","content":"A comment","task_id":"42","posted_at":"2025-01-15T10:30:00Z"}]`))
+		_, _ = w.Write([]byte(`{"results":[{"id":"c1","content":"A comment","task_id":"42","posted_at":"2025-01-15T10:30:00Z"}],"next_cursor":""}`))
 	})
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
@@ -352,10 +352,10 @@ func TestGetCommentsTool(t *testing.T) {
 func TestInboxReviewTool(t *testing.T) {
 	rt := newRouter()
 	rt.handle("GET", "/projects", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`[{"id":"inbox1","name":"Inbox","is_inbox_project":true}]`))
+		_, _ = w.Write([]byte(`{"results":[{"id":"inbox1","name":"Inbox","inbox_project":true}],"next_cursor":""}`))
 	})
 	rt.handle("GET", "/tasks", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`[{"id":"1","content":"Old task","project_id":"inbox1","created_at":"2020-01-01T00:00:00Z"}]`))
+		_, _ = w.Write([]byte(`{"results":[{"id":"1","content":"Old task","project_id":"inbox1","added_at":"2020-01-01T00:00:00Z"}],"next_cursor":""}`))
 	})
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
@@ -370,10 +370,10 @@ func TestInboxReviewTool(t *testing.T) {
 func TestWeeklyReviewTool(t *testing.T) {
 	rt := newRouter()
 	rt.handle("GET", "/projects", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`[{"id":"p1","name":"Work"}]`))
+		_, _ = w.Write([]byte(`{"results":[{"id":"p1","name":"Work"}],"next_cursor":""}`))
 	})
 	rt.handle("GET", "/tasks", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`[{"id":"1","content":"A task","project_id":"p1"}]`))
+		_, _ = w.Write([]byte(`{"results":[{"id":"1","content":"A task","project_id":"p1"}],"next_cursor":""}`))
 	})
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()

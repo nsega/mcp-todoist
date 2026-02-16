@@ -11,7 +11,7 @@ func TestGetProjects(t *testing.T) {
 		if r.URL.Path != "/projects" {
 			t.Errorf("path = %s", r.URL.Path)
 		}
-		_, _ = w.Write([]byte(`[{"id":"100","name":"Inbox","is_inbox_project":true}]`))
+		_, _ = w.Write([]byte(`{"results":[{"id":"100","name":"Inbox","inbox_project":true}],"next_cursor":""}`))
 	})
 	defer srv.Close()
 

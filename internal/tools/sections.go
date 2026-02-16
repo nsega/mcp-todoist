@@ -76,7 +76,7 @@ func registerSectionTools(s *mcp.Server, c *todoist.Client) {
 			"project_id": input.ProjectID,
 		}
 		if input.Order > 0 {
-			body["order"] = input.Order
+			body["section_order"] = input.Order
 		}
 
 		sec, err := c.CreateSection(body)

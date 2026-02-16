@@ -15,7 +15,7 @@ func TestGetTasks(t *testing.T) {
 		if !strings.HasPrefix(r.URL.Path, "/tasks") {
 			t.Errorf("path = %s", r.URL.Path)
 		}
-		_, _ = w.Write([]byte(`[{"id":"1","content":"Test task","priority":1}]`))
+		_, _ = w.Write([]byte(`{"results":[{"id":"1","content":"Test task","priority":1}],"next_cursor":""}`))
 	})
 	defer srv.Close()
 
@@ -40,7 +40,7 @@ func TestGetTasks_withFilters(t *testing.T) {
 		if q.Get("filter") != "today" {
 			t.Errorf("filter = %q", q.Get("filter"))
 		}
-		_, _ = w.Write([]byte(`[]`))
+		_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
 	})
 	defer srv.Close()
 
@@ -156,10 +156,10 @@ func TestReopenTask(t *testing.T) {
 
 func TestFindTaskByName_exactMatch(t *testing.T) {
 	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`[
+		_, _ = w.Write([]byte(`{"results":[
 			{"id":"1","content":"Buy groceries"},
 			{"id":"2","content":"Buy groceries and milk"}
-		]`))
+		],"next_cursor":""}`))
 	})
 	defer srv.Close()
 
@@ -174,7 +174,7 @@ func TestFindTaskByName_exactMatch(t *testing.T) {
 
 func TestFindTaskByName_partialMatch(t *testing.T) {
 	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`[{"id":"3","content":"Weekly team meeting"}]`))
+		_, _ = w.Write([]byte(`{"results":[{"id":"3","content":"Weekly team meeting"}],"next_cursor":""}`))
 	})
 	defer srv.Close()
 
@@ -189,7 +189,7 @@ func TestFindTaskByName_partialMatch(t *testing.T) {
 
 func TestFindTaskByName_notFound(t *testing.T) {
 	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`[{"id":"1","content":"Some task"}]`))
+		_, _ = w.Write([]byte(`{"results":[{"id":"1","content":"Some task"}],"next_cursor":""}`))
 	})
 	defer srv.Close()
 
