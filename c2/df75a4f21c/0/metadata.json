@@ -1,0 +1,13 @@
+{
+  "cli_version": "0.4.4",
+  "checkpoint_id": "c2df75a4f21c",
+  "session_id": "fdd49a8e-d936-4a3f-99fd-d1ce23f3b09c",
+  "strategy": "auto-commit",
+  "created_at": "2026-02-16T10:52:17.082886Z",
+  "branch": "fix/migrate-todoist-api-v1",
+  "checkpoints_count": 0,
+  "files_touched": null,
+  "agent": "Claude Code",
+  "is_task": true,
+  "tool_use_id": "toolu_01CMYNB9FiwRvpDUZB1zZ6zD"
+}
