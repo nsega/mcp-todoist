@@ -1,0 +1,6 @@
+The current Claude Code session is still using the old binary. The MCP server needs to be restarted to pick up the new build. You can do this by:
+
+1. **Restart the MCP server** — run `/mcp` in Claude Code, select `todoist`, and restart it
+2. Or **exit and re-enter** Claude Code
+
+After that, the tools should work. The code change is ready — `rest/v2` has been updated to `api/v1`. Want me to commit this fix?
