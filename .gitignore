@@ -32,6 +32,10 @@ go.work.sum
 # Build directory
 build/
 
+# Claude Code – track shared settings, ignore local
+!.claude/
+.claude/settings.local.json
+
 # Editor/IDE
 # .idea/
 # .vscode/

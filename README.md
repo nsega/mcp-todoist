@@ -3,69 +3,78 @@
 [![Go Version](https://img.shields.io/badge/Go-1.25.7-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A Model Context Protocol (MCP) server for Todoist, written in Go. This server enables Claude and other MCP clients to interact with your Todoist tasks using natural language.
+A Model Context Protocol (MCP) server for Todoist, written in Go. This server enables Claude and other MCP clients to interact with your Todoist tasks, projects, sections, labels, and comments using natural language. Includes GTD workflow tools for inbox processing and weekly reviews.
 
 This is a Go rewrite of the original [TypeScript implementation](https://github.com/abhiz123/todoist-mcp-server), built with the official [go-sdk v1.3.0](https://github.com/modelcontextprotocol/go-sdk).
 
 ## Features
 
-- **Natural Language Task Management**: Create, update, complete, and delete tasks using everyday language
-- **Smart Task Search**: Locate tasks via partial name matching
-- **Flexible Filtering**: Organize tasks by due date, priority, and other attributes
-- **Rich Task Details**: Support for descriptions, deadlines, and priority levels (1-4)
-- **Intuitive Error Handling**: Clear feedback throughout operations
+- **Full Todoist API Coverage**: 29 tools covering tasks, projects, sections, labels, and comments
+- **GTD Workflow Support**: Inbox review, weekly review, task moving, and bulk creation
+- **Smart Task Search**: Locate tasks via exact or partial name matching
+- **Flexible Filtering**: Organize tasks by due date, priority, project, and more
+- **Task ID Support**: Use task IDs directly or search by name
 
 ## Available Tools
 
-### 1. `todoist_create_task`
-Creates new tasks with optional description, due date, and priority level.
+### Task Tools (6)
 
-**Parameters:**
-- `content` (required): The content/title of the task
-- `description` (optional): Detailed description of the task
-- `due_string` (optional): Natural language due date like 'tomorrow', 'next Monday', 'Jan 23'
-- `priority` (optional): Task priority from 1 (normal) to 4 (urgent)
+| Tool | Description | Key Parameters |
+|------|-------------|----------------|
+| `todoist_create_task` | Create a new task | `content`, `description`, `due_string`, `priority`, `project_id`, `section_id`, `parent_id`, `labels`, `assignee_id` |
+| `todoist_get_tasks` | List tasks with filters | `project_id`, `filter`, `priority`, `limit` |
+| `todoist_update_task` | Update a task by ID or name | `task_id`/`task_name`, `content`, `description`, `due_string`, `priority`, `labels`, `assignee_id` |
+| `todoist_delete_task` | Delete a task | `task_id`/`task_name` |
+| `todoist_complete_task` | Mark a task as complete | `task_id`/`task_name` |
+| `todoist_reopen_task` | Reopen a completed task | `task_id`/`task_name` |
 
-**Example:** "Create high priority task 'Fix bug' with description 'Critical performance issue'"
+### Project Tools (7)
 
-### 2. `todoist_get_tasks`
-Retrieves and filters tasks using natural language date filtering and priority/project filtering.
+| Tool | Description | Key Parameters |
+|------|-------------|----------------|
+| `todoist_get_projects` | List all projects | — |
+| `todoist_get_project` | Get a single project | `project_id` |
+| `todoist_create_project` | Create a project | `name`, `parent_id`, `color`, `is_favorite`, `view_style` |
+| `todoist_update_project` | Update a project | `project_id`, `name`, `color`, `is_favorite` |
+| `todoist_delete_project` | Delete a project | `project_id` |
+| `todoist_archive_project` | Archive a project | `project_id` |
+| `todoist_unarchive_project` | Unarchive a project | `project_id` |
 
-**Parameters:**
-- `project_id` (optional): Filter tasks by project ID
-- `filter` (optional): Natural language filter like 'today', 'tomorrow', 'next week', 'priority 1', 'overdue'
-- `priority` (optional): Filter by priority level (1-4)
-- `limit` (optional): Maximum number of tasks to return (default: 10)
+### Section Tools (4)
 
-**Example:** "Show high priority tasks due this week"
+| Tool | Description | Key Parameters |
+|------|-------------|----------------|
+| `todoist_get_sections` | List sections | `project_id` (optional) |
+| `todoist_create_section` | Create a section | `name`, `project_id`, `order` |
+| `todoist_update_section` | Update a section | `section_id`, `name` |
+| `todoist_delete_section` | Delete a section | `section_id` |
 
-### 3. `todoist_update_task`
-Modifies existing tasks found via partial name matching. Can update content, description, due date, or priority.
+### Label Tools (4)
 
-**Parameters:**
-- `task_name` (required): Name/content of the task to search for and update
-- `content` (optional): New content/title for the task
-- `description` (optional): New description for the task
-- `due_string` (optional): New due date in natural language
-- `priority` (optional): New priority level from 1 (normal) to 4 (urgent)
+| Tool | Description | Key Parameters |
+|------|-------------|----------------|
+| `todoist_get_labels` | List all labels | — |
+| `todoist_create_label` | Create a label | `name`, `color`, `is_favorite` |
+| `todoist_update_label` | Update a label | `label_id`, `name`, `color` |
+| `todoist_delete_label` | Delete a label | `label_id` |
 
-**Example:** "Update meeting task to be due next Monday"
+### Comment Tools (4)
 
-### 4. `todoist_complete_task`
-Marks tasks as finished using natural language search.
+| Tool | Description | Key Parameters |
+|------|-------------|----------------|
+| `todoist_get_comments` | List comments | `task_id` or `project_id` |
+| `todoist_create_comment` | Add a comment | `content`, `task_id` or `project_id` |
+| `todoist_update_comment` | Update a comment | `comment_id`, `content` |
+| `todoist_delete_comment` | Delete a comment | `comment_id` |
 
-**Parameters:**
-- `task_name` (required): Name/content of the task to search for and complete
+### GTD Workflow Tools (4)
 
-**Example:** "Mark the documentation task as complete"
-
-### 5. `todoist_delete_task`
-Removes tasks by name with confirmation messages.
-
-**Parameters:**
-- `task_name` (required): Name/content of the task to search for and delete
-
-**Example:** "Delete the PR review task"
+| Tool | Description | How It Works |
+|------|-------------|--------------|
+| `todoist_inbox_review` | Inbox processing view | Auto-detects inbox project, groups tasks by age (today/this week/older) |
+| `todoist_weekly_review` | Weekly review summary | Aggregates: projects with task counts, overdue tasks, tasks with no due date |
+| `todoist_move_task` | Move task to project/section | `task_id`/`task_name`, `project_id`, `section_id` |
+| `todoist_bulk_create_tasks` | Batch create tasks | `tasks[]` array with content, description, due_string, priority, project_id, section_id, labels |
 
 ## Prerequisites
 
@@ -135,154 +144,44 @@ Add the following to your Claude Desktop configuration file:
 
 Replace `/path/to/mcp-todoist` with the actual path to your built binary.
 
-## Using the Todoist Tools
+## Example Workflows
 
-Once configured with Claude Desktop or another MCP client, you can interact with your Todoist tasks using natural language. Here are comprehensive examples for each tool:
-
-### Creating Tasks
-
-**Simple task:**
-```
-Create a task "Buy groceries"
-```
-
-**Task with description:**
-```
-Create a task "Review PR #123" with description "Check code quality and test coverage"
-```
-
-**Task with due date:**
-```
-Create a task "Team meeting" due tomorrow
-```
-
-**High priority task with all details:**
-```
-Create a high priority task "Deploy to production" with description "Deploy v2.0.0 release" due next Friday
-```
-
-**Priority levels:**
-- Priority 1 (normal/default)
-- Priority 2 (medium)
-- Priority 3 (high)
-- Priority 4 (urgent)
-
-### Getting Tasks
-
-**Get all tasks (default limit 10):**
-```
-Show me my tasks
-```
-
-**Get tasks with custom limit:**
-```
-Show me 20 tasks
-```
-
-**Filter by priority:**
-```
-Show me all priority 4 tasks
-```
-
-**Filter by due date:**
-```
-Show me tasks due today
-Show me tasks due this week
-Show me overdue tasks
-```
-
-**Combine filters:**
-```
-Show me high priority tasks due tomorrow
-```
-
-**Get tasks for a specific project:**
-```
-Show me tasks in project ID 2203306141
-```
-
-### Updating Tasks
-
-**Update task name:**
-```
-Update the task "Buy groceries" to "Buy groceries and supplies"
-```
-
-**Change due date:**
-```
-Update the "Team meeting" task to be due next Monday
-```
-
-**Change priority:**
-```
-Update the "Deploy to production" task to priority 4
-```
-
-**Update multiple fields:**
-```
-Update the "Review PR" task with new description "Focus on security aspects" and make it due tomorrow with priority 3
-```
-
-**Note:** Task updates use partial name matching, so you only need to include enough of the task name to uniquely identify it.
-
-### Completing Tasks
-
-**Complete a task:**
-```
-Mark the "Buy groceries" task as complete
-Complete the task "Team meeting"
-```
-
-**Partial name matching:**
-```
-Complete the "groceries" task
-```
-
-This will find and complete any task containing "groceries" in the name.
-
-### Deleting Tasks
-
-**Delete a task:**
-```
-Delete the "Old task" task
-Remove the task "Cancelled meeting"
-```
-
-**Partial name matching:**
-```
-Delete the task containing "old"
-```
-
-**Note:** Like updates and completions, deletions use partial name matching for convenience.
-
-### Natural Language Examples
-
-The server is designed to work with natural language queries through Claude:
+### GTD Inbox Processing
 
 ```
-"Add a new task to buy milk tomorrow"
-→ Creates task "Buy milk" due tomorrow
+Review my Todoist inbox
+→ Runs todoist_inbox_review, shows tasks grouped by age
 
-"What are my urgent tasks?"
-→ Shows all priority 4 tasks
-
-"I finished the documentation task"
-→ Marks task containing "documentation" as complete
-
-"Move my meeting to next week"
-→ Updates the task containing "meeting" with new due date
-
-"I don't need that old PR task anymore"
-→ Deletes task containing "old PR"
+Move the "research API" task to project Work, section Backlog
+→ Runs todoist_move_task with project and section IDs
 ```
 
-### Tips for Best Results
+### Weekly Review
 
-1. **Be specific with task names** - When creating tasks, use clear, descriptive names for easier searching later
-2. **Use partial matching wisely** - You can update/complete/delete tasks using just part of the name, but make sure it's unique enough
-3. **Natural dates work** - Use phrases like "tomorrow", "next Monday", "in 3 days", "Jan 23"
-4. **Priority is optional** - If you don't specify priority, tasks default to priority 1 (normal)
-5. **Filters are flexible** - Combine multiple filters (priority, date, project) to find exactly what you need
+```
+Run my weekly review
+→ Runs todoist_weekly_review, shows project summaries, overdue tasks, undated tasks
+```
+
+### Batch Task Creation
+
+```
+Create these tasks in my "Reading List" project:
+- Read "Thinking, Fast and Slow"
+- Read "Deep Work"
+- Read "Atomic Habits"
+→ Runs todoist_bulk_create_tasks with 3 items
+```
+
+### Project Management
+
+```
+Show me all my projects
+→ Lists all projects with IDs and inbox/favorite status
+
+Create a new project called "Q1 Goals" with board view
+→ Creates project with view_style: board
+```
 
 ## Development
 
@@ -310,12 +209,6 @@ make coverage
 make lint
 ```
 
-### Formatting
-
-```bash
-make fmt
-```
-
 ### Running All Checks
 
 ```bash
@@ -328,36 +221,49 @@ make check
 make build-all
 ```
 
-This creates binaries for:
-- Linux (amd64, arm64)
-- macOS (amd64, arm64)
-- Windows (amd64)
-
 ## Project Structure
 
 ```
 mcp-todoist/
-├── main.go                 # Main server implementation
-├── go.mod                  # Go module definition
-├── go.sum                  # Go module checksums
-├── Makefile               # Build automation
-├── README.md              # This file
-├── LICENSE                # MIT License
-├── .github/
-│   └── workflows/
-│       └── build-and-test.yml  # CI/CD workflow
-└── build/                 # Build output directory
+├── main.go                          # Thin entry point
+├── internal/
+│   ├── models/                      # Shared data types
+│   │   ├── task.go
+│   │   ├── project.go
+│   │   ├── section.go
+│   │   ├── label.go
+│   │   └── comment.go
+│   ├── todoist/                     # API client (no MCP awareness)
+│   │   ├── client.go
+│   │   ├── tasks.go
+│   │   ├── projects.go
+│   │   ├── sections.go
+│   │   ├── labels.go
+│   │   └── comments.go
+│   └── tools/                       # MCP tool handlers
+│       ├── register.go
+│       ├── tasks.go
+│       ├── projects.go
+│       ├── sections.go
+│       ├── labels.go
+│       ├── comments.go
+│       └── gtd.go
+├── go.mod
+├── go.sum
+├── Makefile
+└── README.md
 ```
 
 ## API Integration
 
-This server uses the [Todoist REST API v2](https://developer.todoist.com/rest/v2/) directly via HTTP requests. The implementation includes:
+This server uses the [Todoist REST API v2](https://developer.todoist.com/rest/v2/) with full coverage of:
 
-- Task creation with full metadata support
-- Task retrieval with filtering capabilities
-- Task updates with partial name matching
-- Task completion and deletion
-- Comprehensive error handling
+- Tasks: CRUD, complete, reopen, search by name or ID
+- Projects: CRUD, archive, unarchive
+- Sections: CRUD within projects
+- Labels: CRUD for personal labels
+- Comments: CRUD on tasks and projects
+- GTD: Inbox review, weekly review, task moving, bulk creation
 
 ## License
 
