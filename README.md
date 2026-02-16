@@ -256,7 +256,7 @@ mcp-todoist/
 
 ## API Integration
 
-This server uses the [Todoist API v1](https://developer.todoist.com/rest/v2/) with full coverage of:
+This server uses the [Todoist API v1](https://developer.todoist.com/api/v1/) with full coverage of:
 
 - Tasks: CRUD, complete, reopen, search by name or ID
 - Projects: CRUD, archive, unarchive
