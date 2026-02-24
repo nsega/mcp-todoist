@@ -1,0 +1,1 @@
+Now it'll capture stderr and exit code. Send another message and I'll check.
