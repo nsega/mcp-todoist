@@ -119,9 +119,9 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 				sb.WriteString("(none)\n")
 			}
 			for _, t := range group {
-				sb.WriteString(fmt.Sprintf("- %s (ID: %s)", t.Content, t.ID))
+				fmt.Fprintf(&sb, "- %s (ID: %s)", t.Content, t.ID)
 				if t.Priority > 1 {
-					sb.WriteString(fmt.Sprintf(" [P%d]", t.Priority))
+					fmt.Fprintf(&sb, " [P%d]", t.Priority)
 				}
 				sb.WriteString("\n")
 			}
