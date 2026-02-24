@@ -1,0 +1,1 @@
+Updated the Go version badge from `1.25.7` to `1.26`. Want me to commit and push this?
