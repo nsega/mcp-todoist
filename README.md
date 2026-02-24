@@ -79,7 +79,7 @@ This is a Go rewrite of the original [TypeScript implementation](https://github.
 
 ## Prerequisites
 
-- Go 1.25.7 or later
+- Go 1.26 or later
 - A Todoist account
 - Todoist API token
 
