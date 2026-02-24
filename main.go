@@ -2,8 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -12,9 +11,13 @@ import (
 )
 
 func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
+	slog.SetDefault(logger)
+
 	token := os.Getenv("TODOIST_API_TOKEN")
 	if token == "" {
-		log.Fatal("Error: TODOIST_API_TOKEN environment variable is required")
+		slog.Error("TODOIST_API_TOKEN environment variable is required")
+		os.Exit(1)
 	}
 
 	client := todoist.NewClient(token)
@@ -26,9 +29,10 @@ func main() {
 
 	tools.RegisterAll(server, client)
 
-	fmt.Fprintf(os.Stderr, "Todoist MCP Server starting...\n")
+	slog.Info("todoist MCP server starting", "version", "1.0.0")
 
 	if err := server.Run(context.Background(), &mcp.StdioTransport{}); err != nil {
-		log.Fatalf("Server error: %v", err)
+		slog.Error("server error", "error", err)
+		os.Exit(1)
 	}
 }
