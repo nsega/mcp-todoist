@@ -1,0 +1,9 @@
+Updated line 82: `Go 1.25.7 or later` → `Go 1.26 or later` to match `go.mod` and the badge.
+
+Everything else in the README is already accurate:
+- Badge: Go-1.26
+- go-sdk: v1.3.0
+- Tool count: 29
+- Project structure: correct
+- Makefile targets: all present
+- API version: v1
