@@ -1,0 +1,17 @@
+{
+  "cli_version": "0.4.6",
+  "checkpoint_id": "af2f86600f29",
+  "strategy": "auto-commit",
+  "branch": "refactor/migrate-to-log-slog",
+  "checkpoints_count": 0,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/af/2f86600f29/0/metadata.json",
+      "transcript": "/af/2f86600f29/0/full.jsonl",
+      "context": "",
+      "content_hash": "/af/2f86600f29/0/content_hash.txt",
+      "prompt": ""
+    }
+  ]
+}
