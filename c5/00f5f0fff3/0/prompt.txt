@@ -1,0 +1,1 @@
+Migrate logging to log/slog by refering how to use log/slog via context7
