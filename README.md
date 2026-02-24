@@ -1,6 +1,6 @@
 # Todoist MCP Server (Go)
 
-[![Go Version](https://img.shields.io/badge/Go-1.25.7-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+[![Go Version](https://img.shields.io/badge/Go-1.26-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A Model Context Protocol (MCP) server for Todoist, written in Go. This server enables Claude and other MCP clients to interact with your Todoist tasks, projects, sections, labels, and comments using natural language. Includes GTD workflow tools for inbox processing and weekly reviews.
