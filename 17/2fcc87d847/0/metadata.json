@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.4.6",
+  "checkpoint_id": "172fcc87d847",
+  "session_id": "eac1bebd-3aa4-4d57-b5df-dd1ada4cc4da",
+  "strategy": "auto-commit",
+  "created_at": "2026-02-24T16:37:45.126342Z",
+  "branch": "refactor/migrate-to-log-slog",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CLAUDE.md"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "d218b4bb1621",
+  "checkpoint_transcript_start": 242,
+  "transcript_lines_at_start": 242,
+  "token_usage": {
+    "input_tokens": 9,
+    "cache_creation_tokens": 9647,
+    "cache_read_tokens": 417137,
+    "output_tokens": 1719,
+    "api_call_count": 7
+  }
+}

@@ -1,0 +1,10 @@
+Created `CLAUDE.md` with:
+
+- **Project overview** — what it is, how stdio is used
+- **Architecture** — three-layer design with dependency direction
+- **Commands** — build, test, lint, check, coverage
+- **Conventions** — slog logging (JSONHandler to stderr, lowercase messages, structured attributes), error handling patterns, testing approach
+- **CI** — what GitHub Actions checks run
+- **Environment** — required env var, Go version
+
+**README.md** — no changes needed. It's already comprehensive and nothing became inaccurate from the slog migration (logging is an internal detail, not user-facing).
