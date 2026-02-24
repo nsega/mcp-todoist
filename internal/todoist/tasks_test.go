@@ -73,7 +73,7 @@ func TestCreateTask(t *testing.T) {
 		if r.Method != http.MethodPost {
 			t.Errorf("method = %s", r.Method)
 		}
-		var body map[string]interface{}
+		var body map[string]any
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			t.Fatal(err)
 		}
@@ -85,7 +85,7 @@ func TestCreateTask(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.CreateTask(map[string]interface{}{"content": "New task"})
+	task, err := c.CreateTask(map[string]any{"content": "New task"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,7 +103,7 @@ func TestUpdateTask(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.UpdateTask("10", map[string]interface{}{"content": "Updated"})
+	task, err := c.UpdateTask("10", map[string]any{"content": "Updated"})
 	if err != nil {
 		t.Fatal(err)
 	}

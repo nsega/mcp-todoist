@@ -22,7 +22,7 @@ func (c *Client) GetLabels() ([]models.Label, error) {
 }
 
 // CreateLabel creates a new personal label.
-func (c *Client) CreateLabel(body map[string]interface{}) (*models.Label, error) {
+func (c *Client) CreateLabel(body map[string]any) (*models.Label, error) {
 	data, err := c.do("POST", "/labels", body)
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func (c *Client) CreateLabel(body map[string]interface{}) (*models.Label, error)
 }
 
 // UpdateLabel updates an existing label.
-func (c *Client) UpdateLabel(id string, body map[string]interface{}) (*models.Label, error) {
+func (c *Client) UpdateLabel(id string, body map[string]any) (*models.Label, error) {
 	data, err := c.do("POST", "/labels/"+id, body)
 	if err != nil {
 		return nil, err

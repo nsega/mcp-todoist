@@ -121,7 +121,7 @@ func registerProjectTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_create_project",
 		Description: "Create a new Todoist project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateProjectInput) (*mcp.CallToolResult, CreateProjectOutput, error) {
-		body := map[string]interface{}{"name": input.Name}
+		body := map[string]any{"name": input.Name}
 		if input.ParentID != "" {
 			body["parent_id"] = input.ParentID
 		}
@@ -148,7 +148,7 @@ func registerProjectTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_update_project",
 		Description: "Update an existing Todoist project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateProjectInput) (*mcp.CallToolResult, UpdateProjectOutput, error) {
-		body := map[string]interface{}{}
+		body := map[string]any{}
 		if input.Name != "" {
 			body["name"] = input.Name
 		}

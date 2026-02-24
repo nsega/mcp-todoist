@@ -35,7 +35,7 @@ func TestCreateComment(t *testing.T) {
 	})
 	defer srv.Close()
 
-	cm, err := c.CreateComment(map[string]interface{}{"content": "New comment", "task_id": "42"})
+	cm, err := c.CreateComment(map[string]any{"content": "New comment", "task_id": "42"})
 	if err != nil {
 		t.Fatal(err)
 	}

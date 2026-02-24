@@ -119,7 +119,7 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_create_task",
 		Description: "Create a new task in Todoist with optional description, due date, priority, project, section, labels, and assignee",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateTaskInput) (*mcp.CallToolResult, CreateTaskOutput, error) {
-		body := map[string]interface{}{"content": input.Content}
+		body := map[string]any{"content": input.Content}
 		if input.Description != "" {
 			body["description"] = input.Description
 		}
@@ -230,7 +230,7 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 			return textResult(msg, true), UpdateTaskOutput{Success: false, Message: msg}, nil
 		}
 
-		body := map[string]interface{}{}
+		body := map[string]any{}
 		if input.Content != "" {
 			body["content"] = input.Content
 		}

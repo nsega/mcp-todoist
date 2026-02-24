@@ -71,7 +71,7 @@ func registerSectionTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_create_section",
 		Description: "Create a new section in a Todoist project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateSectionInput) (*mcp.CallToolResult, CreateSectionOutput, error) {
-		body := map[string]interface{}{
+		body := map[string]any{
 			"name":       input.Name,
 			"project_id": input.ProjectID,
 		}
@@ -92,7 +92,7 @@ func registerSectionTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_update_section",
 		Description: "Update an existing section name",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateSectionInput) (*mcp.CallToolResult, UpdateSectionOutput, error) {
-		body := map[string]interface{}{"name": input.Name}
+		body := map[string]any{"name": input.Name}
 		sec, err := c.UpdateSection(input.SectionID, body)
 		if err != nil {
 			return nil, UpdateSectionOutput{Success: false, Message: err.Error()}, err

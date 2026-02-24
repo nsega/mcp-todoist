@@ -32,7 +32,7 @@ func TestCreateLabel(t *testing.T) {
 	})
 	defer srv.Close()
 
-	l, err := c.CreateLabel(map[string]interface{}{"name": "waiting"})
+	l, err := c.CreateLabel(map[string]any{"name": "waiting"})
 	if err != nil {
 		t.Fatal(err)
 	}
