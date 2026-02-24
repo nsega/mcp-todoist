@@ -29,7 +29,7 @@ func main() {
 
 	tools.RegisterAll(server, client)
 
-	slog.Info("Todoist MCP Server starting")
+	slog.Info("todoist MCP server starting", "version", "1.0.0")
 
 	if err := server.Run(context.Background(), &mcp.StdioTransport{}); err != nil {
 		slog.Error("server error", "error", err)
