@@ -1,5 +1,6 @@
 # Todoist MCP Server (Go)
 
+[![Build and Test](https://github.com/nsega/mcp-todoist/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/nsega/mcp-todoist/actions/workflows/build-and-test.yml)
 [![Go Version](https://img.shields.io/badge/Go-1.26-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
