@@ -1,0 +1,1 @@
+I've added a debug log to the `Stop` hook. After this turn ends, if the hook fires we'll see an entry in `/tmp/entire-debug.log`. Send me another message and I'll check.
