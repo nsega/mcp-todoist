@@ -49,7 +49,7 @@ func (c *Client) GetTask(id string) (*models.Task, error) {
 }
 
 // CreateTask creates a new task.
-func (c *Client) CreateTask(body map[string]interface{}) (*models.Task, error) {
+func (c *Client) CreateTask(body map[string]any) (*models.Task, error) {
 	data, err := c.do("POST", "/tasks", body)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (c *Client) CreateTask(body map[string]interface{}) (*models.Task, error) {
 }
 
 // UpdateTask updates an existing task.
-func (c *Client) UpdateTask(id string, body map[string]interface{}) (*models.Task, error) {
+func (c *Client) UpdateTask(id string, body map[string]any) (*models.Task, error) {
 	data, err := c.do("POST", "/tasks/"+id, body)
 	if err != nil {
 		return nil, err

@@ -87,7 +87,7 @@ func setupTest(t *testing.T, rt *router) (*mcp.ClientSession, func()) {
 	return cSession, cleanup
 }
 
-func callTool(t *testing.T, cs *mcp.ClientSession, name string, args map[string]interface{}) *mcp.CallToolResult {
+func callTool(t *testing.T, cs *mcp.ClientSession, name string, args map[string]any) *mcp.CallToolResult {
 	t.Helper()
 	result, err := cs.CallTool(context.Background(), &mcp.CallToolParams{
 		Name:      name,
@@ -118,7 +118,7 @@ func TestCreateTaskTool(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_create_task", map[string]interface{}{
+	result := callTool(t, cs, "todoist_create_task", map[string]any{
 		"content":  "Test task",
 		"priority": 2,
 	})
@@ -136,7 +136,7 @@ func TestGetTasksTool(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_get_tasks", map[string]interface{}{})
+	result := callTool(t, cs, "todoist_get_tasks", map[string]any{})
 	text := resultText(result)
 	if !strings.Contains(text, "Task A") || !strings.Contains(text, "Task B") {
 		t.Errorf("unexpected result: %s", text)
@@ -151,7 +151,7 @@ func TestCompleteTaskTool_byID(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_complete_task", map[string]interface{}{
+	result := callTool(t, cs, "todoist_complete_task", map[string]any{
 		"task_id": "42",
 	})
 	text := resultText(result)
@@ -168,7 +168,7 @@ func TestDeleteTaskTool_notFound(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_delete_task", map[string]interface{}{
+	result := callTool(t, cs, "todoist_delete_task", map[string]any{
 		"task_name": "nonexistent",
 	})
 	if !result.IsError {
@@ -187,7 +187,7 @@ func TestReopenTaskTool(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_reopen_task", map[string]interface{}{
+	result := callTool(t, cs, "todoist_reopen_task", map[string]any{
 		"task_id": "7",
 	})
 	text := resultText(result)
@@ -206,7 +206,7 @@ func TestGetProjectsTool(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_get_projects", map[string]interface{}{})
+	result := callTool(t, cs, "todoist_get_projects", map[string]any{})
 	text := resultText(result)
 	if !strings.Contains(text, "Work") || !strings.Contains(text, "[Inbox]") {
 		t.Errorf("unexpected result: %s", text)
@@ -221,7 +221,7 @@ func TestCreateProjectTool(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_create_project", map[string]interface{}{
+	result := callTool(t, cs, "todoist_create_project", map[string]any{
 		"name": "New Project",
 	})
 	if !strings.Contains(resultText(result), "Project created") {
@@ -237,7 +237,7 @@ func TestDeleteProjectTool(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_delete_project", map[string]interface{}{
+	result := callTool(t, cs, "todoist_delete_project", map[string]any{
 		"project_id": "p1",
 	})
 	if !strings.Contains(resultText(result), "Successfully deleted project") {
@@ -255,7 +255,7 @@ func TestGetLabelsTool(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_get_labels", map[string]interface{}{})
+	result := callTool(t, cs, "todoist_get_labels", map[string]any{})
 	text := resultText(result)
 	if !strings.Contains(text, "waiting") || !strings.Contains(text, "[Favorite]") {
 		t.Errorf("unexpected result: %s", text)
@@ -270,7 +270,7 @@ func TestCreateLabelTool(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_create_label", map[string]interface{}{
+	result := callTool(t, cs, "todoist_create_label", map[string]any{
 		"name": "next-action",
 	})
 	if !strings.Contains(resultText(result), "Label created") {
@@ -288,7 +288,7 @@ func TestGetSectionsTool(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_get_sections", map[string]interface{}{})
+	result := callTool(t, cs, "todoist_get_sections", map[string]any{})
 	text := resultText(result)
 	if !strings.Contains(text, "Backlog") {
 		t.Errorf("unexpected result: %s", text)
@@ -303,7 +303,7 @@ func TestCreateSectionTool(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_create_section", map[string]interface{}{
+	result := callTool(t, cs, "todoist_create_section", map[string]any{
 		"name":       "In Progress",
 		"project_id": "p1",
 	})
@@ -322,7 +322,7 @@ func TestCreateCommentTool(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_create_comment", map[string]interface{}{
+	result := callTool(t, cs, "todoist_create_comment", map[string]any{
 		"content": "A note",
 		"task_id": "42",
 	})
@@ -339,7 +339,7 @@ func TestGetCommentsTool(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_get_comments", map[string]interface{}{
+	result := callTool(t, cs, "todoist_get_comments", map[string]any{
 		"task_id": "42",
 	})
 	if !strings.Contains(resultText(result), "A comment") {
@@ -360,7 +360,7 @@ func TestInboxReviewTool(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_inbox_review", map[string]interface{}{})
+	result := callTool(t, cs, "todoist_inbox_review", map[string]any{})
 	text := resultText(result)
 	if !strings.Contains(text, "Inbox Review") || !strings.Contains(text, "Old task") {
 		t.Errorf("unexpected result: %s", text)
@@ -378,7 +378,7 @@ func TestWeeklyReviewTool(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_weekly_review", map[string]interface{}{})
+	result := callTool(t, cs, "todoist_weekly_review", map[string]any{})
 	text := resultText(result)
 	if !strings.Contains(text, "Weekly Review") || !strings.Contains(text, "Work") {
 		t.Errorf("unexpected result: %s", text)
@@ -395,8 +395,8 @@ func TestBulkCreateTasksTool(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_bulk_create_tasks", map[string]interface{}{
-		"tasks": []map[string]interface{}{
+	result := callTool(t, cs, "todoist_bulk_create_tasks", map[string]any{
+		"tasks": []map[string]any{
 			{"content": "Task 1"},
 			{"content": "Task 2"},
 		},
@@ -415,7 +415,7 @@ func TestMoveTaskTool(t *testing.T) {
 	cs, cleanup := setupTest(t, rt)
 	defer cleanup()
 
-	result := callTool(t, cs, "todoist_move_task", map[string]interface{}{
+	result := callTool(t, cs, "todoist_move_task", map[string]any{
 		"task_id":    "42",
 		"project_id": "p2",
 	})

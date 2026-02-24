@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ['1.25.7']
+        go-version: ['1.26']
 
     steps:
     - name: Check out code
@@ -53,6 +53,15 @@ jobs:
         flags: unittests
         fail_ci_if_error: false
 
+    - name: Check go fix modernizers
+      run: |
+        diff=$(go fix -diff ./... 2>&1)
+        if [ -n "$diff" ]; then
+          echo "$diff"
+          echo "::error::go fix found unmodernized code. Run 'go fix ./...' and commit the changes."
+          exit 1
+        fi
+
     - name: Run go vet
       run: go vet ./...
 
@@ -72,10 +81,10 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.25.7'
+        go-version: '1.26'
 
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v8
       with:
-        version: v2.6.2
+        version: v2.10.1
         args: --timeout=5m

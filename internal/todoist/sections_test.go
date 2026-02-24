@@ -35,7 +35,7 @@ func TestCreateSection(t *testing.T) {
 	})
 	defer srv.Close()
 
-	sec, err := c.CreateSection(map[string]interface{}{"name": "In Progress", "project_id": "123"})
+	sec, err := c.CreateSection(map[string]any{"name": "In Progress", "project_id": "123"})
 	if err != nil {
 		t.Fatal(err)
 	}

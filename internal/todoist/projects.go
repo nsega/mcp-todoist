@@ -36,7 +36,7 @@ func (c *Client) GetProject(id string) (*models.Project, error) {
 }
 
 // CreateProject creates a new project.
-func (c *Client) CreateProject(body map[string]interface{}) (*models.Project, error) {
+func (c *Client) CreateProject(body map[string]any) (*models.Project, error) {
 	data, err := c.do("POST", "/projects", body)
 	if err != nil {
 		return nil, err
@@ -50,7 +50,7 @@ func (c *Client) CreateProject(body map[string]interface{}) (*models.Project, er
 }
 
 // UpdateProject updates an existing project.
-func (c *Client) UpdateProject(id string, body map[string]interface{}) (*models.Project, error) {
+func (c *Client) UpdateProject(id string, body map[string]any) (*models.Project, error) {
 	data, err := c.do("POST", "/projects/"+id, body)
 	if err != nil {
 		return nil, err

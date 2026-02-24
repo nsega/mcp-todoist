@@ -47,7 +47,7 @@ func TestCreateProject(t *testing.T) {
 		if r.Method != http.MethodPost {
 			t.Errorf("method = %s", r.Method)
 		}
-		var body map[string]interface{}
+		var body map[string]any
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			t.Fatal(err)
 		}
@@ -58,7 +58,7 @@ func TestCreateProject(t *testing.T) {
 	})
 	defer srv.Close()
 
-	p, err := c.CreateProject(map[string]interface{}{"name": "New Project"})
+	p, err := c.CreateProject(map[string]any{"name": "New Project"})
 	if err != nil {
 		t.Fatal(err)
 	}

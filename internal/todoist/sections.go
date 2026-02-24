@@ -27,7 +27,7 @@ func (c *Client) GetSections(projectID string) ([]models.Section, error) {
 }
 
 // CreateSection creates a new section.
-func (c *Client) CreateSection(body map[string]interface{}) (*models.Section, error) {
+func (c *Client) CreateSection(body map[string]any) (*models.Section, error) {
 	data, err := c.do("POST", "/sections", body)
 	if err != nil {
 		return nil, err
@@ -41,7 +41,7 @@ func (c *Client) CreateSection(body map[string]interface{}) (*models.Section, er
 }
 
 // UpdateSection updates an existing section.
-func (c *Client) UpdateSection(id string, body map[string]interface{}) (*models.Section, error) {
+func (c *Client) UpdateSection(id string, body map[string]any) (*models.Section, error) {
 	data, err := c.do("POST", "/sections/"+id, body)
 	if err != nil {
 		return nil, err

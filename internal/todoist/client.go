@@ -52,7 +52,7 @@ func NewClient(token string, opts ...Option) *Client {
 
 // do executes an HTTP request against the Todoist API and returns the
 // response body bytes. For responses with no content (204) it returns nil.
-func (c *Client) do(method, endpoint string, body interface{}) ([]byte, error) {
+func (c *Client) do(method, endpoint string, body any) ([]byte, error) {
 	var reqBody io.Reader
 	if body != nil {
 		data, err := json.Marshal(body)

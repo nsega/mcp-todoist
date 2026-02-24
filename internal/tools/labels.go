@@ -74,7 +74,7 @@ func registerLabelTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_create_label",
 		Description: "Create a new personal label",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateLabelInput) (*mcp.CallToolResult, CreateLabelOutput, error) {
-		body := map[string]interface{}{"name": input.Name}
+		body := map[string]any{"name": input.Name}
 		if input.Color != "" {
 			body["color"] = input.Color
 		}
@@ -95,7 +95,7 @@ func registerLabelTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_update_label",
 		Description: "Update an existing label",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateLabelInput) (*mcp.CallToolResult, UpdateLabelOutput, error) {
-		body := map[string]interface{}{}
+		body := map[string]any{}
 		if input.Name != "" {
 			body["name"] = input.Name
 		}

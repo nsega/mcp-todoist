@@ -30,7 +30,7 @@ func (c *Client) GetComments(taskID, projectID string) ([]models.Comment, error)
 }
 
 // CreateComment creates a new comment.
-func (c *Client) CreateComment(body map[string]interface{}) (*models.Comment, error) {
+func (c *Client) CreateComment(body map[string]any) (*models.Comment, error) {
 	data, err := c.do("POST", "/comments", body)
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func (c *Client) CreateComment(body map[string]interface{}) (*models.Comment, er
 }
 
 // UpdateComment updates an existing comment.
-func (c *Client) UpdateComment(id string, body map[string]interface{}) (*models.Comment, error) {
+func (c *Client) UpdateComment(id string, body map[string]any) (*models.Comment, error) {
 	data, err := c.do("POST", "/comments/"+id, body)
 	if err != nil {
 		return nil, err

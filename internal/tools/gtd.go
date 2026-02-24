@@ -119,9 +119,9 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 				sb.WriteString("(none)\n")
 			}
 			for _, t := range group {
-				sb.WriteString(fmt.Sprintf("- %s (ID: %s)", t.Content, t.ID))
+				fmt.Fprintf(&sb, "- %s (ID: %s)", t.Content, t.ID)
 				if t.Priority > 1 {
-					sb.WriteString(fmt.Sprintf(" [P%d]", t.Priority))
+					fmt.Fprintf(&sb, " [P%d]", t.Priority)
 				}
 				sb.WriteString("\n")
 			}
@@ -221,7 +221,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 			return textResult(msg, true), MoveTaskOutput{Success: false, Message: msg}, nil
 		}
 
-		body := map[string]interface{}{}
+		body := map[string]any{}
 		if input.ProjectID != "" {
 			body["project_id"] = input.ProjectID
 		}
@@ -257,7 +257,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		var lines []string
 
 		for _, item := range input.Tasks {
-			body := map[string]interface{}{"content": item.Content}
+			body := map[string]any{"content": item.Content}
 			if item.Description != "" {
 				body["description"] = item.Description
 			}
