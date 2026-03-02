@@ -154,6 +154,27 @@ func TestReopenTask(t *testing.T) {
 	}
 }
 
+func TestGetTasks_withSpecialCharFilter(t *testing.T) {
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		if got := q.Get("filter"); got != "today & @deep-research" {
+			t.Errorf("filter = %q, want %q", got, "today & @deep-research")
+		}
+		// Verify the raw query does not contain an unencoded &
+		// that would split the filter into separate parameters.
+		if strings.Count(r.URL.RawQuery, "&") != 0 {
+			t.Errorf("raw query contains unencoded &: %s", r.URL.RawQuery)
+		}
+		_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
+	})
+	defer srv.Close()
+
+	_, err := c.GetTasks("", "today & @deep-research")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestFindTaskByName_exactMatch(t *testing.T) {
 	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`{"results":[
@@ -199,5 +220,22 @@ func TestFindTaskByName_notFound(t *testing.T) {
 	}
 	if task != nil {
 		t.Errorf("expected nil, got %+v", task)
+	}
+}
+
+func TestFindTaskByName_whitespaceNormalization(t *testing.T) {
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"results":[
+			{"id":"1","content":"  Buy   groceries  and   milk  "}
+		],"next_cursor":""}`))
+	})
+	defer srv.Close()
+
+	task, err := c.FindTaskByName("Buy groceries and milk")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if task == nil || task.ID != "1" {
+		t.Errorf("expected whitespace-normalized match id=1, got %+v", task)
 	}
 }

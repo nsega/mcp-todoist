@@ -44,6 +44,27 @@ func TestCreateComment(t *testing.T) {
 	}
 }
 
+func TestGetComments_byProject(t *testing.T) {
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/comments" {
+			t.Errorf("path = %s", r.URL.Path)
+		}
+		if q := r.URL.Query().Get("project_id"); q != "p1" {
+			t.Errorf("project_id = %q", q)
+		}
+		if q := r.URL.Query().Get("task_id"); q != "" {
+			t.Errorf("unexpected task_id = %q", q)
+		}
+		_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
+	})
+	defer srv.Close()
+
+	_, err := c.GetComments("", "p1")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestDeleteComment(t *testing.T) {
 	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodDelete || r.URL.Path != "/comments/c1" {
