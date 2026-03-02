@@ -3,6 +3,7 @@ package todoist
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"github.com/nsega/mcp-todoist/internal/models"
 )
@@ -11,7 +12,9 @@ import (
 func (c *Client) GetSections(projectID string) ([]models.Section, error) {
 	endpoint := "/sections"
 	if projectID != "" {
-		endpoint += "?project_id=" + projectID
+		values := url.Values{}
+		values.Set("project_id", projectID)
+		endpoint += "?" + values.Encode()
 	}
 
 	data, err := c.do("GET", endpoint, nil)

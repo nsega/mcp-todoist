@@ -3,6 +3,7 @@ package todoist
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/nsega/mcp-todoist/internal/models"
@@ -11,15 +12,15 @@ import (
 // GetTasks returns active tasks, optionally filtered.
 func (c *Client) GetTasks(projectID, filter string) ([]models.Task, error) {
 	endpoint := "/tasks"
-	var params []string
+	values := url.Values{}
 	if projectID != "" {
-		params = append(params, fmt.Sprintf("project_id=%s", projectID))
+		values.Set("project_id", projectID)
 	}
 	if filter != "" {
-		params = append(params, fmt.Sprintf("filter=%s", filter))
+		values.Set("filter", filter)
 	}
-	if len(params) > 0 {
-		endpoint += "?" + strings.Join(params, "&")
+	if len(values) > 0 {
+		endpoint += "?" + values.Encode()
 	}
 
 	data, err := c.do("GET", endpoint, nil)
