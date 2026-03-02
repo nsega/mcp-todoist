@@ -44,6 +44,44 @@ func TestCreateComment(t *testing.T) {
 	}
 }
 
+func TestGetComments_noParams(t *testing.T) {
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		// When neither taskID nor projectID is set, the URL must not
+		// have a trailing '?' (which the old code produced).
+		if r.URL.RawQuery != "" {
+			t.Errorf("expected empty query string, got %q", r.URL.RawQuery)
+		}
+		_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
+	})
+	defer srv.Close()
+
+	_, err := c.GetComments("", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestGetComments_byProject(t *testing.T) {
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/comments" {
+			t.Errorf("path = %s", r.URL.Path)
+		}
+		if q := r.URL.Query().Get("project_id"); q != "p1" {
+			t.Errorf("project_id = %q", q)
+		}
+		if q := r.URL.Query().Get("task_id"); q != "" {
+			t.Errorf("unexpected task_id = %q", q)
+		}
+		_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
+	})
+	defer srv.Close()
+
+	_, err := c.GetComments("", "p1")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestDeleteComment(t *testing.T) {
 	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodDelete || r.URL.Path != "/comments/c1" {

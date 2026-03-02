@@ -3,6 +3,8 @@ package todoist
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"regexp"
 	"strings"
 
 	"github.com/nsega/mcp-todoist/internal/models"
@@ -11,15 +13,15 @@ import (
 // GetTasks returns active tasks, optionally filtered.
 func (c *Client) GetTasks(projectID, filter string) ([]models.Task, error) {
 	endpoint := "/tasks"
-	var params []string
+	values := url.Values{}
 	if projectID != "" {
-		params = append(params, fmt.Sprintf("project_id=%s", projectID))
+		values.Set("project_id", projectID)
 	}
 	if filter != "" {
-		params = append(params, fmt.Sprintf("filter=%s", filter))
+		values.Set("filter", filter)
 	}
-	if len(params) > 0 {
-		endpoint += "?" + strings.Join(params, "&")
+	if len(values) > 0 {
+		endpoint += "?" + values.Encode()
 	}
 
 	data, err := c.do("GET", endpoint, nil)
@@ -94,6 +96,13 @@ func (c *Client) ReopenTask(id string) error {
 	return err
 }
 
+var collapseWS = regexp.MustCompile(`\s+`)
+
+// normalizeWhitespace trims and collapses runs of whitespace to a single space.
+func normalizeWhitespace(s string) string {
+	return collapseWS.ReplaceAllString(strings.TrimSpace(s), " ")
+}
+
 // FindTaskByName searches for a task by partial name matching.
 // Returns nil if no match is found.
 func (c *Client) FindTaskByName(name string) (*models.Task, error) {
@@ -102,18 +111,18 @@ func (c *Client) FindTaskByName(name string) (*models.Task, error) {
 		return nil, err
 	}
 
-	nameLower := strings.ToLower(name)
+	norm := strings.ToLower(normalizeWhitespace(name))
 
 	// Prefer exact match first.
 	for i := range tasks {
-		if strings.ToLower(tasks[i].Content) == nameLower {
+		if strings.ToLower(normalizeWhitespace(tasks[i].Content)) == norm {
 			return &tasks[i], nil
 		}
 	}
 
 	// Fall back to partial match.
 	for i := range tasks {
-		if strings.Contains(strings.ToLower(tasks[i].Content), nameLower) {
+		if strings.Contains(strings.ToLower(normalizeWhitespace(tasks[i].Content)), norm) {
 			return &tasks[i], nil
 		}
 	}

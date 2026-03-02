@@ -199,7 +199,7 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 		} else {
 			var lines []string
 			for _, t := range tasks {
-				s := fmt.Sprintf("- %s", t.Content)
+				s := fmt.Sprintf("- %s (ID: %s)", t.Content, t.ID)
 				if t.Description != "" {
 					s += fmt.Sprintf("\n  Description: %s", t.Description)
 				}

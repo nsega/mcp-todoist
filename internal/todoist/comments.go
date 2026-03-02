@@ -3,6 +3,7 @@ package todoist
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"github.com/nsega/mcp-todoist/internal/models"
 )
@@ -10,11 +11,15 @@ import (
 // GetComments returns comments for a task or project.
 // Exactly one of taskID or projectID should be non-empty.
 func (c *Client) GetComments(taskID, projectID string) ([]models.Comment, error) {
-	endpoint := "/comments?"
+	endpoint := "/comments"
+	values := url.Values{}
 	if taskID != "" {
-		endpoint += "task_id=" + taskID
+		values.Set("task_id", taskID)
 	} else if projectID != "" {
-		endpoint += "project_id=" + projectID
+		values.Set("project_id", projectID)
+	}
+	if len(values) > 0 {
+		endpoint += "?" + values.Encode()
 	}
 
 	data, err := c.do("GET", endpoint, nil)

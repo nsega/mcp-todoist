@@ -143,6 +143,27 @@ func TestGetTasksTool(t *testing.T) {
 	}
 }
 
+func TestGetTasksTool_outputIncludesIDs(t *testing.T) {
+	rt := newRouter()
+	rt.handle("GET", "/tasks", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"results":[
+			{"id":"abc123","content":"First task","priority":1},
+			{"id":"def456","content":"Second task","priority":2}
+		],"next_cursor":""}`))
+	})
+	cs, cleanup := setupTest(t, rt)
+	defer cleanup()
+
+	result := callTool(t, cs, "todoist_get_tasks", map[string]any{})
+	text := resultText(result)
+	if !strings.Contains(text, "(ID: abc123)") {
+		t.Errorf("output missing task ID abc123: %s", text)
+	}
+	if !strings.Contains(text, "(ID: def456)") {
+		t.Errorf("output missing task ID def456: %s", text)
+	}
+}
+
 func TestCompleteTaskTool_byID(t *testing.T) {
 	rt := newRouter()
 	rt.handle("POST", "/tasks/42/close", func(w http.ResponseWriter, r *http.Request) {
