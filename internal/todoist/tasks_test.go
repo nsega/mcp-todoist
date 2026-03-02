@@ -294,6 +294,52 @@ func TestGetTasksByFilter_pagination(t *testing.T) {
 	}
 }
 
+func TestGetTasksByFilter_maxPagesGuard(t *testing.T) {
+	pageCount := 0
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		pageCount++
+		_, _ = w.Write([]byte(`{"items":[{"id":"1","content":"Unrelated task"}],"next_cursor":"next"}`))
+	})
+	defer srv.Close()
+
+	tasks, err := c.GetTasksByFilter("today")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if pageCount != maxFindPages {
+		t.Errorf("expected %d pages fetched (max guard), got %d", maxFindPages, pageCount)
+	}
+	if len(tasks) != maxFindPages {
+		t.Errorf("expected %d tasks, got %d", maxFindPages, len(tasks))
+	}
+}
+
+func TestGetTasksByFilter_apiErrorOnSecondPage(t *testing.T) {
+	page := 0
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		cursor := r.URL.Query().Get("cursor")
+		switch {
+		case cursor == "" && page == 0:
+			page++
+			_, _ = w.Write([]byte(`{"items":[{"id":"1","content":"First page task"}],"next_cursor":"page2"}`))
+		case cursor == "page2":
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte(`{"error":"server error"}`))
+		default:
+			_, _ = w.Write([]byte(`{"items":[],"next_cursor":""}`))
+		}
+	})
+	defer srv.Close()
+
+	_, err := c.GetTasksByFilter("today")
+	if err == nil {
+		t.Fatal("expected error when second page fails, got nil")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("expected 500 in error, got: %v", err)
+	}
+}
+
 func TestGetTasksByFilter_apiError(t *testing.T) {
 	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
