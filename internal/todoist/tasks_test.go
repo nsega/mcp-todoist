@@ -478,3 +478,26 @@ func TestFindTaskByName_apiErrorOnSecondPage(t *testing.T) {
 		t.Errorf("expected 500 in error, got: %v", err)
 	}
 }
+
+func TestFindTaskByName_maxPagesGuard(t *testing.T) {
+	pageCount := 0
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		pageCount++
+		// Always return a non-empty cursor to simulate infinite pagination.
+		_, _ = w.Write([]byte(`{"results":[
+			{"id":"1","content":"Unrelated task"}
+		],"next_cursor":"next"}`))
+	})
+	defer srv.Close()
+
+	task, err := c.FindTaskByName("nonexistent")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if task != nil {
+		t.Errorf("expected nil, got %+v", task)
+	}
+	if pageCount != maxFindPages {
+		t.Errorf("expected %d pages fetched (max guard), got %d", maxFindPages, pageCount)
+	}
+}

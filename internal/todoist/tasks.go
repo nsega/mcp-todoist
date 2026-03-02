@@ -136,6 +136,10 @@ func normalizeWhitespace(s string) string {
 	return collapseWS.ReplaceAllString(strings.TrimSpace(s), " ")
 }
 
+// maxFindPages limits the number of pages FindTaskByName will fetch
+// to avoid unbounded iteration (20 pages × 50 tasks/page = 1000 tasks).
+const maxFindPages = 20
+
 // FindTaskByName searches for a task by partial name matching across all pages.
 // Exact matches take priority over partial matches. Returns nil if no match is found.
 func (c *Client) FindTaskByName(name string) (*models.Task, error) {
@@ -143,7 +147,7 @@ func (c *Client) FindTaskByName(name string) (*models.Task, error) {
 
 	var partial *models.Task
 	cursor := ""
-	for {
+	for page := 0; page < maxFindPages; page++ {
 		tasks, nextCursor, err := c.getTasksPage("", cursor)
 		if err != nil {
 			return nil, err
