@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.4.8",
+  "checkpoint_id": "405486271571",
+  "strategy": "manual-commit",
+  "branch": "fix/issues-8-9-url-encoding-and-task-ids",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "internal/todoist/comments.go",
+    "internal/todoist/sections.go",
+    "internal/todoist/tasks.go"
+  ],
+  "sessions": [
+    {
+      "metadata": "/40/5486271571/0/metadata.json",
+      "transcript": "/40/5486271571/0/full.jsonl",
+      "context": "/40/5486271571/0/context.md",
+      "content_hash": "/40/5486271571/0/content_hash.txt",
+      "prompt": "/40/5486271571/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 25,
+    "cache_creation_tokens": 40590,
+    "cache_read_tokens": 881275,
+    "output_tokens": 5212,
+    "api_call_count": 21
+  }
+}

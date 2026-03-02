@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.8",
+  "checkpoint_id": "405486271571",
+  "session_id": "5422b33c-0e96-4a71-b4f2-b227e22575e0",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T06:03:00.254468Z",
+  "branch": "fix/issues-8-9-url-encoding-and-task-ids",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "internal/todoist/tasks.go",
+    "internal/todoist/sections.go",
+    "internal/todoist/comments.go"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "9c559f2f31e6",
+  "token_usage": {
+    "input_tokens": 25,
+    "cache_creation_tokens": 40590,
+    "cache_read_tokens": 881275,
+    "output_tokens": 5212,
+    "api_call_count": 21
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T06:03:00.199208Z",
+    "agent_lines": 18,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 18,
+    "agent_percentage": 100
+  }
+}
