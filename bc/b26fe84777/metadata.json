@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.8",
+  "checkpoint_id": "bcb26fe84777",
+  "strategy": "manual-commit",
+  "branch": "fix/issues-8-9-filter-endpoint-and-pagination",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "internal/todoist/tasks.go"
+  ],
+  "sessions": [
+    {
+      "metadata": "/bc/b26fe84777/0/metadata.json",
+      "transcript": "/bc/b26fe84777/0/full.jsonl",
+      "context": "/bc/b26fe84777/0/context.md",
+      "content_hash": "/bc/b26fe84777/0/content_hash.txt",
+      "prompt": "/bc/b26fe84777/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 22,
+    "cache_creation_tokens": 20954,
+    "cache_read_tokens": 1941363,
+    "output_tokens": 2947,
+    "api_call_count": 14
+  }
+}
