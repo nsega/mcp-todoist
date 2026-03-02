@@ -3,6 +3,7 @@ package todoist
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/url"
 	"regexp"
 	"strings"
@@ -10,11 +11,21 @@ import (
 	"github.com/nsega/mcp-todoist/internal/models"
 )
 
-// FilteredTasksResponse wraps the /tasks/filter endpoint response which uses
-// "items" instead of "results".
-type FilteredTasksResponse struct {
+// filteredTasksResponse wraps the /tasks/filter endpoint response.
+// The documented key is "items", but we also accept "results" as a fallback
+// in case the API returns the same shape as the /tasks endpoint.
+type filteredTasksResponse struct {
 	Items      []models.Task `json:"items"`
+	Results    []models.Task `json:"results"`
 	NextCursor string        `json:"next_cursor"`
+}
+
+// tasks returns whichever array is populated.
+func (r *filteredTasksResponse) tasks() []models.Task {
+	if len(r.Items) > 0 {
+		return r.Items
+	}
+	return r.Results
 }
 
 // getTasksPage returns one page of active tasks plus the cursor for the next page.
@@ -49,24 +60,48 @@ func (c *Client) GetTasks(projectID string) ([]models.Task, error) {
 	return tasks, err
 }
 
-// GetTasksByFilter returns tasks matching a Todoist filter query using the
-// dedicated /tasks/filter endpoint.
-func (c *Client) GetTasksByFilter(query string) ([]models.Task, error) {
-	endpoint := "/tasks/filter"
+// getFilteredTasksPage returns one page of filtered tasks plus the cursor for the next page.
+func (c *Client) getFilteredTasksPage(query, cursor string) ([]models.Task, string, error) {
 	values := url.Values{}
 	values.Set("query", query)
-	endpoint += "?" + values.Encode()
+	if cursor != "" {
+		values.Set("cursor", cursor)
+	}
+	endpoint := "/tasks/filter?" + values.Encode()
+
+	slog.Debug("todoist filter request", "endpoint", endpoint)
 
 	data, err := c.do("GET", endpoint, nil)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	var resp FilteredTasksResponse
+	slog.Debug("todoist filter response", "body", string(data))
+
+	var resp filteredTasksResponse
 	if err := json.Unmarshal(data, &resp); err != nil {
-		return nil, fmt.Errorf("failed to parse filtered tasks: %w", err)
+		return nil, "", fmt.Errorf("failed to parse filtered tasks: %w", err)
 	}
-	return resp.Items, nil
+	return resp.tasks(), resp.NextCursor, nil
+}
+
+// GetTasksByFilter returns tasks matching a Todoist filter query using the
+// dedicated /tasks/filter endpoint. It paginates up to maxFindPages pages.
+func (c *Client) GetTasksByFilter(query string) ([]models.Task, error) {
+	var all []models.Task
+	cursor := ""
+	for range maxFindPages {
+		tasks, nextCursor, err := c.getFilteredTasksPage(query, cursor)
+		if err != nil {
+			return nil, err
+		}
+		all = append(all, tasks...)
+		if nextCursor == "" {
+			break
+		}
+		cursor = nextCursor
+	}
+	return all, nil
 }
 
 // GetTask returns a single task by ID.

@@ -236,6 +236,64 @@ func TestGetTasksByFilter_labelFilter(t *testing.T) {
 	}
 }
 
+func TestGetTasksByFilter_resultsKeyFallback(t *testing.T) {
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/tasks/filter" {
+			t.Errorf("path = %s, want /tasks/filter", r.URL.Path)
+		}
+		// API returns "results" instead of "items"
+		_, _ = w.Write([]byte(`{"results":[{"id":"1","content":"Fallback task","priority":2}],"next_cursor":""}`))
+	})
+	defer srv.Close()
+
+	tasks, err := c.GetTasksByFilter("today")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(tasks) != 1 {
+		t.Fatalf("got %d tasks, want 1", len(tasks))
+	}
+	if tasks[0].Content != "Fallback task" {
+		t.Errorf("content = %q, want %q", tasks[0].Content, "Fallback task")
+	}
+}
+
+func TestGetTasksByFilter_pagination(t *testing.T) {
+	page := 0
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/tasks/filter" {
+			t.Errorf("path = %s", r.URL.Path)
+		}
+		cursor := r.URL.Query().Get("cursor")
+		switch {
+		case cursor == "" && page == 0:
+			page++
+			_, _ = w.Write([]byte(`{"items":[{"id":"1","content":"Page 1 task"}],"next_cursor":"page2"}`))
+		case cursor == "page2":
+			page++
+			_, _ = w.Write([]byte(`{"items":[{"id":"2","content":"Page 2 task"}],"next_cursor":""}`))
+		default:
+			t.Errorf("unexpected cursor = %q, page = %d", cursor, page)
+			_, _ = w.Write([]byte(`{"items":[],"next_cursor":""}`))
+		}
+	})
+	defer srv.Close()
+
+	tasks, err := c.GetTasksByFilter("today")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(tasks) != 2 {
+		t.Fatalf("got %d tasks, want 2", len(tasks))
+	}
+	if tasks[0].ID != "1" || tasks[1].ID != "2" {
+		t.Errorf("tasks = %+v", tasks)
+	}
+	if page != 2 {
+		t.Errorf("expected 2 pages fetched, got %d", page)
+	}
+}
+
 func TestGetTasksByFilter_apiError(t *testing.T) {
 	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
