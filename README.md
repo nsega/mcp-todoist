@@ -6,7 +6,7 @@
 
 A Model Context Protocol (MCP) server for Todoist, written in Go. This server enables Claude and other MCP clients to interact with your Todoist tasks, projects, sections, labels, and comments using natural language. Includes GTD workflow tools for inbox processing and weekly reviews.
 
-This is a Go rewrite of the original [TypeScript implementation](https://github.com/abhiz123/todoist-mcp-server), built with the official [go-sdk v1.3.0](https://github.com/modelcontextprotocol/go-sdk).
+This is a Go rewrite of the original [TypeScript implementation](https://github.com/abhiz123/todoist-mcp-server), built with the official [go-sdk v1.4.0](https://github.com/modelcontextprotocol/go-sdk).
 
 ## Features
 
@@ -273,7 +273,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## Acknowledgments
 
 - Original TypeScript implementation by [abhiz123](https://github.com/abhiz123/todoist-mcp-server)
-- Built with [go-sdk v1.3.0](https://github.com/modelcontextprotocol/go-sdk)
+- Built with [go-sdk v1.4.0](https://github.com/modelcontextprotocol/go-sdk)
 - GitHub Actions and Makefile structure inspired by [mcp-obsidian](https://github.com/nsega/mcp-obsidian)
 
 ## Contributing
