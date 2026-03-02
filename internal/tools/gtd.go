@@ -84,7 +84,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 			return textResult(msg, true), InboxReviewOutput{Success: false, Message: msg}, nil
 		}
 
-		tasks, err := c.GetTasks(inboxID, "")
+		tasks, err := c.GetTasks(inboxID)
 		if err != nil {
 			return nil, InboxReviewOutput{}, err
 		}
@@ -146,7 +146,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 			return nil, WeeklyReviewOutput{}, err
 		}
 
-		allTasks, err := c.GetTasks("", "")
+		allTasks, err := c.GetTasks("")
 		if err != nil {
 			return nil, WeeklyReviewOutput{}, err
 		}
@@ -158,7 +158,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		}
 
 		// Overdue tasks.
-		overdueTasks, err := c.GetTasks("", "overdue")
+		overdueTasks, err := c.GetTasksByFilter("overdue")
 		if err != nil {
 			overdueTasks = nil // non-fatal
 		}
