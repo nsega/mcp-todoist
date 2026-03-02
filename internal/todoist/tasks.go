@@ -147,7 +147,7 @@ func (c *Client) FindTaskByName(name string) (*models.Task, error) {
 
 	var partial *models.Task
 	cursor := ""
-	for page := 0; page < maxFindPages; page++ {
+	for range maxFindPages {
 		tasks, nextCursor, err := c.getTasksPage("", cursor)
 		if err != nil {
 			return nil, err
