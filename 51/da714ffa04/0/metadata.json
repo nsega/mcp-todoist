@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.8",
+  "checkpoint_id": "51da714ffa04",
+  "session_id": "0e825adf-deb4-4331-9ff4-1ae57d1826de",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T09:12:19.001267Z",
+  "branch": "fix/issue-8-filter-response-parsing",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "internal/todoist/tasks_test.go"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "24e7c838ffa6",
+  "checkpoint_transcript_start": 148,
+  "transcript_lines_at_start": 148,
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 16810,
+    "cache_read_tokens": 857870,
+    "output_tokens": 2023,
+    "api_call_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T09:12:18.880313Z",
+    "agent_lines": 46,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 46,
+    "agent_percentage": 100
+  }
+}
