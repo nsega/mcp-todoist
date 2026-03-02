@@ -160,8 +160,8 @@ func TestGetTasks_withSpecialCharFilter(t *testing.T) {
 		if got := q.Get("filter"); got != "today & @deep-research" {
 			t.Errorf("filter = %q, want %q", got, "today & @deep-research")
 		}
-		// Verify the raw query does not contain an unencoded &
-		// that would split the filter into separate parameters.
+		// Only one parameter is passed, so there should be no literal &
+		// in the raw query (the & inside the filter value must be encoded).
 		if strings.Count(r.URL.RawQuery, "&") != 0 {
 			t.Errorf("raw query contains unencoded &: %s", r.URL.RawQuery)
 		}
@@ -170,6 +170,45 @@ func TestGetTasks_withSpecialCharFilter(t *testing.T) {
 	defer srv.Close()
 
 	_, err := c.GetTasks("", "today & @deep-research")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestGetTasks_filterWithHash(t *testing.T) {
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		if got := q.Get("filter"); got != "priority 1 & #Work" {
+			t.Errorf("filter = %q, want %q", got, "priority 1 & #Work")
+		}
+		_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
+	})
+	defer srv.Close()
+
+	_, err := c.GetTasks("", "priority 1 & #Work")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestGetTasks_withBothProjectIDAndFilter(t *testing.T) {
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		if got := q.Get("project_id"); got != "abc123" {
+			t.Errorf("project_id = %q, want %q", got, "abc123")
+		}
+		if got := q.Get("filter"); got != "today & @deep-research" {
+			t.Errorf("filter = %q, want %q", got, "today & @deep-research")
+		}
+		// Two params should produce exactly one literal & joining them.
+		if strings.Count(r.URL.RawQuery, "&") != 1 {
+			t.Errorf("expected exactly 1 literal & between params, raw query: %s", r.URL.RawQuery)
+		}
+		_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
+	})
+	defer srv.Close()
+
+	_, err := c.GetTasks("abc123", "today & @deep-research")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -237,5 +276,23 @@ func TestFindTaskByName_whitespaceNormalization(t *testing.T) {
 	}
 	if task == nil || task.ID != "1" {
 		t.Errorf("expected whitespace-normalized match id=1, got %+v", task)
+	}
+}
+
+func TestFindTaskByName_longTaskName(t *testing.T) {
+	const longName = "Kubernetes Gateway API vs Ingress patterns for production GKE clusters"
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"results":[
+			{"id":"42","content":"` + longName + `"}
+		],"next_cursor":""}`))
+	})
+	defer srv.Close()
+
+	task, err := c.FindTaskByName(longName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if task == nil || task.ID != "42" {
+		t.Errorf("expected exact match id=42 for long name, got %+v", task)
 	}
 }
