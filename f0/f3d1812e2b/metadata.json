@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.8",
+  "checkpoint_id": "f0f3d1812e2b",
+  "strategy": "manual-commit",
+  "branch": "fix/issue-8-filter-response-parsing",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "internal/todoist/tasks.go",
+    "internal/todoist/tasks_test.go"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f0/f3d1812e2b/0/metadata.json",
+      "transcript": "/f0/f3d1812e2b/0/full.jsonl",
+      "context": "/f0/f3d1812e2b/0/context.md",
+      "content_hash": "/f0/f3d1812e2b/0/content_hash.txt",
+      "prompt": "/f0/f3d1812e2b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 40,
+    "cache_creation_tokens": 60352,
+    "cache_read_tokens": 1708110,
+    "output_tokens": 21218,
+    "api_call_count": 32
+  }
+}

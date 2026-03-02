@@ -1,0 +1,18 @@
+Issue #8 is still not resolved. Please take a look at it.
+https://github.com/nsega/mcp-todoist/issues/8#issuecomment-3983018277
+
+---
+
+[Request interrupted by user for tool use]
+
+---
+
+if you refer to todoist reference, must use context7.
+
+---
+
+Explain the root cause of this issue
+
+---
+
+i see. create the pull request to fix this issue.
