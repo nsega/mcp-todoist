@@ -12,14 +12,14 @@ func TestGetTasks(t *testing.T) {
 		if r.Method != http.MethodGet {
 			t.Errorf("method = %s", r.Method)
 		}
-		if !strings.HasPrefix(r.URL.Path, "/tasks") {
+		if r.URL.Path != "/tasks" {
 			t.Errorf("path = %s", r.URL.Path)
 		}
 		_, _ = w.Write([]byte(`{"results":[{"id":"1","content":"Test task","priority":1}],"next_cursor":""}`))
 	})
 	defer srv.Close()
 
-	tasks, err := c.GetTasks("", "")
+	tasks, err := c.GetTasks("")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,20 +31,17 @@ func TestGetTasks(t *testing.T) {
 	}
 }
 
-func TestGetTasks_withFilters(t *testing.T) {
+func TestGetTasks_withProjectID(t *testing.T) {
 	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
 		if q.Get("project_id") != "123" {
 			t.Errorf("project_id = %q", q.Get("project_id"))
 		}
-		if q.Get("filter") != "today" {
-			t.Errorf("filter = %q", q.Get("filter"))
-		}
 		_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
 	})
 	defer srv.Close()
 
-	_, err := c.GetTasks("123", "today")
+	_, err := c.GetTasks("123")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -154,65 +151,123 @@ func TestReopenTask(t *testing.T) {
 	}
 }
 
-func TestGetTasks_withSpecialCharFilter(t *testing.T) {
+// --- GetTasksByFilter tests ---
+
+func TestGetTasksByFilter(t *testing.T) {
 	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
-		q := r.URL.Query()
-		if got := q.Get("filter"); got != "today & @deep-research" {
-			t.Errorf("filter = %q, want %q", got, "today & @deep-research")
+		if r.URL.Path != "/tasks/filter" {
+			t.Errorf("path = %s, want /tasks/filter", r.URL.Path)
 		}
-		// Only one parameter is passed, so there should be no literal &
-		// in the raw query (the & inside the filter value must be encoded).
+		q := r.URL.Query()
+		if got := q.Get("query"); got != "today" {
+			t.Errorf("query = %q, want %q", got, "today")
+		}
+		_, _ = w.Write([]byte(`{"items":[{"id":"1","content":"Due today","priority":1}],"next_cursor":""}`))
+	})
+	defer srv.Close()
+
+	tasks, err := c.GetTasksByFilter("today")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(tasks) != 1 {
+		t.Fatalf("got %d tasks", len(tasks))
+	}
+	if tasks[0].Content != "Due today" {
+		t.Errorf("content = %q", tasks[0].Content)
+	}
+}
+
+func TestGetTasksByFilter_specialChars(t *testing.T) {
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/tasks/filter" {
+			t.Errorf("path = %s", r.URL.Path)
+		}
+		q := r.URL.Query()
+		if got := q.Get("query"); got != "today & @deep-research" {
+			t.Errorf("query = %q, want %q", got, "today & @deep-research")
+		}
+		// Only one parameter (query), so no literal & should appear in raw query.
 		if strings.Count(r.URL.RawQuery, "&") != 0 {
 			t.Errorf("raw query contains unencoded &: %s", r.URL.RawQuery)
 		}
-		_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
+		_, _ = w.Write([]byte(`{"items":[],"next_cursor":""}`))
 	})
 	defer srv.Close()
 
-	_, err := c.GetTasks("", "today & @deep-research")
+	_, err := c.GetTasksByFilter("today & @deep-research")
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func TestGetTasks_filterWithHash(t *testing.T) {
+func TestGetTasksByFilter_hashFilter(t *testing.T) {
 	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
-		if got := q.Get("filter"); got != "priority 1 & #Work" {
-			t.Errorf("filter = %q, want %q", got, "priority 1 & #Work")
+		if got := q.Get("query"); got != "priority 1 & #Work" {
+			t.Errorf("query = %q, want %q", got, "priority 1 & #Work")
 		}
-		_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
+		_, _ = w.Write([]byte(`{"items":[],"next_cursor":""}`))
 	})
 	defer srv.Close()
 
-	_, err := c.GetTasks("", "priority 1 & #Work")
+	_, err := c.GetTasksByFilter("priority 1 & #Work")
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func TestGetTasks_withBothProjectIDAndFilter(t *testing.T) {
+func TestGetTasksByFilter_labelFilter(t *testing.T) {
 	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
-		if got := q.Get("project_id"); got != "abc123" {
-			t.Errorf("project_id = %q, want %q", got, "abc123")
+		if got := q.Get("query"); got != "@deep-research" {
+			t.Errorf("query = %q, want %q", got, "@deep-research")
 		}
-		if got := q.Get("filter"); got != "today & @deep-research" {
-			t.Errorf("filter = %q, want %q", got, "today & @deep-research")
-		}
-		// Two params should produce exactly one literal & joining them.
-		if strings.Count(r.URL.RawQuery, "&") != 1 {
-			t.Errorf("expected exactly 1 literal & between params, raw query: %s", r.URL.RawQuery)
-		}
-		_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
+		_, _ = w.Write([]byte(`{"items":[{"id":"10","content":"Research task","labels":["deep-research"]}],"next_cursor":""}`))
 	})
 	defer srv.Close()
 
-	_, err := c.GetTasks("abc123", "today & @deep-research")
+	tasks, err := c.GetTasksByFilter("@deep-research")
 	if err != nil {
 		t.Fatal(err)
 	}
+	if len(tasks) != 1 || tasks[0].ID != "10" {
+		t.Errorf("expected 1 task with id=10, got %+v", tasks)
+	}
 }
+
+func TestGetTasksByFilter_apiError(t *testing.T) {
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"error":"invalid filter"}`))
+	})
+	defer srv.Close()
+
+	_, err := c.GetTasksByFilter(")))invalid(((")
+	if err == nil {
+		t.Fatal("expected error for bad filter, got nil")
+	}
+	if !strings.Contains(err.Error(), "400") {
+		t.Errorf("expected 400 in error, got: %v", err)
+	}
+}
+
+func TestGetTasksByFilter_emptyResult(t *testing.T) {
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"items":[],"next_cursor":""}`))
+	})
+	defer srv.Close()
+
+	tasks, err := c.GetTasksByFilter("@nonexistent-label")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(tasks) != 0 {
+		t.Errorf("expected 0 tasks, got %d", len(tasks))
+	}
+}
+
+// --- FindTaskByName tests ---
 
 func TestFindTaskByName_exactMatch(t *testing.T) {
 	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
@@ -294,5 +349,155 @@ func TestFindTaskByName_longTaskName(t *testing.T) {
 	}
 	if task == nil || task.ID != "42" {
 		t.Errorf("expected exact match id=42 for long name, got %+v", task)
+	}
+}
+
+func TestFindTaskByName_pagination(t *testing.T) {
+	page := 0
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		cursor := r.URL.Query().Get("cursor")
+		switch {
+		case cursor == "" && page == 0:
+			page++
+			_, _ = w.Write([]byte(`{"results":[
+				{"id":"1","content":"First page task"}
+			],"next_cursor":"page2"}`))
+		case cursor == "page2":
+			page++
+			_, _ = w.Write([]byte(`{"results":[
+				{"id":"2","content":"Second page task"},
+				{"id":"3","content":"TEST: verify MCP bug fixes"}
+			],"next_cursor":""}`))
+		default:
+			t.Errorf("unexpected cursor = %q, page = %d", cursor, page)
+			_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
+		}
+	})
+	defer srv.Close()
+
+	task, err := c.FindTaskByName("TEST: verify MCP bug fixes")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if task == nil || task.ID != "3" {
+		t.Errorf("expected match on page 2 id=3, got %+v", task)
+	}
+	if page != 2 {
+		t.Errorf("expected 2 pages fetched, got %d", page)
+	}
+}
+
+func TestFindTaskByName_exactMatchPriorityAcrossPages(t *testing.T) {
+	// Partial match on page 1, exact match on page 2 — exact should win.
+	page := 0
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		cursor := r.URL.Query().Get("cursor")
+		switch {
+		case cursor == "" && page == 0:
+			page++
+			_, _ = w.Write([]byte(`{"results":[
+				{"id":"1","content":"Buy groceries and milk"}
+			],"next_cursor":"page2"}`))
+		case cursor == "page2":
+			page++
+			_, _ = w.Write([]byte(`{"results":[
+				{"id":"2","content":"Buy groceries"}
+			],"next_cursor":""}`))
+		default:
+			_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
+		}
+	})
+	defer srv.Close()
+
+	task, err := c.FindTaskByName("Buy groceries")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if task == nil || task.ID != "2" {
+		t.Errorf("expected exact match id=2 over partial id=1, got %+v", task)
+	}
+}
+
+func TestFindTaskByName_notFoundAcrossPages(t *testing.T) {
+	page := 0
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		cursor := r.URL.Query().Get("cursor")
+		switch {
+		case cursor == "" && page == 0:
+			page++
+			_, _ = w.Write([]byte(`{"results":[
+				{"id":"1","content":"Alpha task"}
+			],"next_cursor":"page2"}`))
+		case cursor == "page2":
+			page++
+			_, _ = w.Write([]byte(`{"results":[
+				{"id":"2","content":"Beta task"}
+			],"next_cursor":""}`))
+		default:
+			_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
+		}
+	})
+	defer srv.Close()
+
+	task, err := c.FindTaskByName("nonexistent across pages")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if task != nil {
+		t.Errorf("expected nil after exhausting all pages, got %+v", task)
+	}
+	if page != 2 {
+		t.Errorf("expected both pages fetched, got %d", page)
+	}
+}
+
+func TestFindTaskByName_apiErrorOnSecondPage(t *testing.T) {
+	page := 0
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		cursor := r.URL.Query().Get("cursor")
+		switch {
+		case cursor == "" && page == 0:
+			page++
+			_, _ = w.Write([]byte(`{"results":[
+				{"id":"1","content":"First page task"}
+			],"next_cursor":"page2"}`))
+		case cursor == "page2":
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte(`{"error":"server error"}`))
+		default:
+			_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
+		}
+	})
+	defer srv.Close()
+
+	_, err := c.FindTaskByName("Target task")
+	if err == nil {
+		t.Fatal("expected error when second page fails, got nil")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("expected 500 in error, got: %v", err)
+	}
+}
+
+func TestFindTaskByName_maxPagesGuard(t *testing.T) {
+	pageCount := 0
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		pageCount++
+		// Always return a non-empty cursor to simulate infinite pagination.
+		_, _ = w.Write([]byte(`{"results":[
+			{"id":"1","content":"Unrelated task"}
+		],"next_cursor":"next"}`))
+	})
+	defer srv.Close()
+
+	task, err := c.FindTaskByName("nonexistent")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if task != nil {
+		t.Errorf("expected nil, got %+v", task)
+	}
+	if pageCount != maxFindPages {
+		t.Errorf("expected %d pages fetched (max guard), got %d", maxFindPages, pageCount)
 	}
 }

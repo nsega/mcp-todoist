@@ -164,6 +164,64 @@ func TestGetTasksTool_outputIncludesIDs(t *testing.T) {
 	}
 }
 
+func TestGetTasksTool_withFilter(t *testing.T) {
+	rt := newRouter()
+	rt.handle("GET", "/tasks/filter", func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		if got := q.Get("query"); got != "@deep-research" {
+			t.Errorf("query = %q, want %q", got, "@deep-research")
+		}
+		_, _ = w.Write([]byte(`{"items":[{"id":"10","content":"Research task","labels":["deep-research"],"priority":1}],"next_cursor":""}`))
+	})
+	cs, cleanup := setupTest(t, rt)
+	defer cleanup()
+
+	result := callTool(t, cs, "todoist_get_tasks", map[string]any{
+		"filter": "@deep-research",
+	})
+	text := resultText(result)
+	if !strings.Contains(text, "Research task") {
+		t.Errorf("expected filter results, got: %s", text)
+	}
+	if !strings.Contains(text, "(ID: 10)") {
+		t.Errorf("output missing task ID: %s", text)
+	}
+}
+
+func TestGetTasksTool_filterApiError(t *testing.T) {
+	rt := newRouter()
+	rt.handle("GET", "/tasks/filter", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"error":"invalid filter"}`))
+	})
+	cs, cleanup := setupTest(t, rt)
+	defer cleanup()
+
+	result := callTool(t, cs, "todoist_get_tasks", map[string]any{
+		"filter": ")))bad(((",
+	})
+	if !result.IsError {
+		t.Error("expected IsError = true for bad filter")
+	}
+}
+
+func TestGetTasksTool_filterNoResults(t *testing.T) {
+	rt := newRouter()
+	rt.handle("GET", "/tasks/filter", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"items":[],"next_cursor":""}`))
+	})
+	cs, cleanup := setupTest(t, rt)
+	defer cleanup()
+
+	result := callTool(t, cs, "todoist_get_tasks", map[string]any{
+		"filter": "@nonexistent",
+	})
+	text := resultText(result)
+	if !strings.Contains(text, "No tasks found") {
+		t.Errorf("expected no-tasks message, got: %s", text)
+	}
+}
+
 func TestCompleteTaskTool_byID(t *testing.T) {
 	rt := newRouter()
 	rt.handle("POST", "/tasks/42/close", func(w http.ResponseWriter, r *http.Request) {
@@ -392,6 +450,10 @@ func TestWeeklyReviewTool(t *testing.T) {
 	rt := newRouter()
 	rt.handle("GET", "/projects", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`{"results":[{"id":"p1","name":"Work"}],"next_cursor":""}`))
+	})
+	rt.handle("GET", "/tasks/filter", func(w http.ResponseWriter, r *http.Request) {
+		// Overdue filter uses /tasks/filter endpoint.
+		_, _ = w.Write([]byte(`{"items":[],"next_cursor":""}`))
 	})
 	rt.handle("GET", "/tasks", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`{"results":[{"id":"1","content":"A task","project_id":"p1"}],"next_cursor":""}`))

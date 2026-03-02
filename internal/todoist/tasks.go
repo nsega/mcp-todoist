@@ -10,15 +10,22 @@ import (
 	"github.com/nsega/mcp-todoist/internal/models"
 )
 
-// GetTasks returns active tasks, optionally filtered.
-func (c *Client) GetTasks(projectID, filter string) ([]models.Task, error) {
+// FilteredTasksResponse wraps the /tasks/filter endpoint response which uses
+// "items" instead of "results".
+type FilteredTasksResponse struct {
+	Items      []models.Task `json:"items"`
+	NextCursor string        `json:"next_cursor"`
+}
+
+// getTasksPage returns one page of active tasks plus the cursor for the next page.
+func (c *Client) getTasksPage(projectID, cursor string) ([]models.Task, string, error) {
 	endpoint := "/tasks"
 	values := url.Values{}
 	if projectID != "" {
 		values.Set("project_id", projectID)
 	}
-	if filter != "" {
-		values.Set("filter", filter)
+	if cursor != "" {
+		values.Set("cursor", cursor)
 	}
 	if len(values) > 0 {
 		endpoint += "?" + values.Encode()
@@ -26,14 +33,40 @@ func (c *Client) GetTasks(projectID, filter string) ([]models.Task, error) {
 
 	data, err := c.do("GET", endpoint, nil)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	var page PaginatedResponse[models.Task]
 	if err := json.Unmarshal(data, &page); err != nil {
-		return nil, fmt.Errorf("failed to parse tasks: %w", err)
+		return nil, "", fmt.Errorf("failed to parse tasks: %w", err)
 	}
-	return page.Results, nil
+	return page.Results, page.NextCursor, nil
+}
+
+// GetTasks returns the first page of active tasks, optionally filtered by project.
+func (c *Client) GetTasks(projectID string) ([]models.Task, error) {
+	tasks, _, err := c.getTasksPage(projectID, "")
+	return tasks, err
+}
+
+// GetTasksByFilter returns tasks matching a Todoist filter query using the
+// dedicated /tasks/filter endpoint.
+func (c *Client) GetTasksByFilter(query string) ([]models.Task, error) {
+	endpoint := "/tasks/filter"
+	values := url.Values{}
+	values.Set("query", query)
+	endpoint += "?" + values.Encode()
+
+	data, err := c.do("GET", endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp FilteredTasksResponse
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return nil, fmt.Errorf("failed to parse filtered tasks: %w", err)
+	}
+	return resp.Items, nil
 }
 
 // GetTask returns a single task by ID.
@@ -103,29 +136,39 @@ func normalizeWhitespace(s string) string {
 	return collapseWS.ReplaceAllString(strings.TrimSpace(s), " ")
 }
 
-// FindTaskByName searches for a task by partial name matching.
-// Returns nil if no match is found.
-func (c *Client) FindTaskByName(name string) (*models.Task, error) {
-	tasks, err := c.GetTasks("", "")
-	if err != nil {
-		return nil, err
-	}
+// maxFindPages limits the number of pages FindTaskByName will fetch
+// to avoid unbounded iteration (20 pages × 50 tasks/page = 1000 tasks).
+const maxFindPages = 20
 
+// FindTaskByName searches for a task by partial name matching across all pages.
+// Exact matches take priority over partial matches. Returns nil if no match is found.
+func (c *Client) FindTaskByName(name string) (*models.Task, error) {
 	norm := strings.ToLower(normalizeWhitespace(name))
 
-	// Prefer exact match first.
-	for i := range tasks {
-		if strings.ToLower(normalizeWhitespace(tasks[i].Content)) == norm {
-			return &tasks[i], nil
+	var partial *models.Task
+	cursor := ""
+	for range maxFindPages {
+		tasks, nextCursor, err := c.getTasksPage("", cursor)
+		if err != nil {
+			return nil, err
 		}
+
+		for i := range tasks {
+			content := strings.ToLower(normalizeWhitespace(tasks[i].Content))
+			if content == norm {
+				return &tasks[i], nil // exact match — return immediately
+			}
+			if partial == nil && strings.Contains(content, norm) {
+				t := tasks[i]
+				partial = &t
+			}
+		}
+
+		if nextCursor == "" {
+			break
+		}
+		cursor = nextCursor
 	}
 
-	// Fall back to partial match.
-	for i := range tasks {
-		if strings.Contains(strings.ToLower(normalizeWhitespace(tasks[i].Content)), norm) {
-			return &tasks[i], nil
-		}
-	}
-
-	return nil, nil
+	return partial, nil
 }

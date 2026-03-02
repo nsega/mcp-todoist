@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
+	"github.com/nsega/mcp-todoist/internal/models"
 	"github.com/nsega/mcp-todoist/internal/todoist"
 )
 
@@ -168,7 +169,13 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_get_tasks",
 		Description: "Get a list of tasks from Todoist with various filters",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input GetTasksInput) (*mcp.CallToolResult, GetTasksOutput, error) {
-		tasks, err := c.GetTasks(input.ProjectID, input.Filter)
+		var tasks []models.Task
+		var err error
+		if input.Filter != "" {
+			tasks, err = c.GetTasksByFilter(input.Filter)
+		} else {
+			tasks, err = c.GetTasks(input.ProjectID)
+		}
 		if err != nil {
 			return nil, GetTasksOutput{}, err
 		}
