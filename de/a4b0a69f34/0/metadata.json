@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.8",
+  "checkpoint_id": "dea4b0a69f34",
+  "session_id": "eb3216cd-5523-4f24-8b2a-81a0fb7fe7c9",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-02T08:28:42.295796Z",
+  "branch": "fix/issues-8-9-filter-endpoint-and-pagination",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "internal/todoist/tasks.go",
+    "internal/todoist/tasks_test.go"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "7dc8f1609298",
+  "checkpoint_transcript_start": 222,
+  "transcript_lines_at_start": 222,
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 16444,
+    "cache_read_tokens": 1422427,
+    "output_tokens": 4089,
+    "api_call_count": 12
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-02T08:28:42.139579Z",
+    "agent_lines": 28,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 28,
+    "agent_percentage": 100
+  }
+}
