@@ -57,4 +57,4 @@ GitHub Actions runs on every push/PR to main:
 ## Environment
 
 - Requires `TODOIST_API_TOKEN` env var
-- Go 1.26.1+
+- Go 1.26.2+
