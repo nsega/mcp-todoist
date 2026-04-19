@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.5.5",
+  "checkpoint_id": "8985a6cad580",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 4,
+  "files_touched": [
+    ".github/workflows/build-and-test.yml",
+    "CLAUDE.md",
+    "README.md",
+    "go.mod",
+    "go.sum"
+  ],
+  "sessions": [
+    {
+      "metadata": "/89/85a6cad580/0/metadata.json",
+      "transcript": "/89/85a6cad580/0/full.jsonl",
+      "content_hash": "/89/85a6cad580/0/content_hash.txt",
+      "prompt": "/89/85a6cad580/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 52,
+    "cache_creation_tokens": 63762,
+    "cache_read_tokens": 993420,
+    "output_tokens": 7133,
+    "api_call_count": 22
+  }
+}
