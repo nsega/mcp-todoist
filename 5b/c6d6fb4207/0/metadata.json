@@ -1,0 +1,70 @@
+{
+  "cli_version": "0.6.0",
+  "checkpoint_id": "5bc6d6fb4207",
+  "session_id": "540bed66-1aed-4b30-ad14-51f2702dc04a",
+  "strategy": "manual-commit",
+  "created_at": "2026-05-23T22:55:37.487836Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "go.mod",
+    "go.sum"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-7[1m]",
+  "turn_id": "9cfd4325fbee",
+  "token_usage": {
+    "input_tokens": 29,
+    "cache_creation_tokens": 29810,
+    "cache_read_tokens": 576545,
+    "output_tokens": 2205,
+    "api_call_count": 14
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-05-23T22:55:37.482699Z",
+    "agent_lines": 6,
+    "agent_removed": 6,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 6,
+    "total_lines_changed": 12,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 4,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".go.mod.~undo-tree~": 4
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 4,
+      "user_lines_removed": 0,
+      "agent_lines_added": 6,
+      "agent_lines_removed": 6,
+      "user_added_per_file": {
+        ".go.mod.~undo-tree~": 4
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 4,
+      "user_lines_removed": 0,
+      "agent_lines_added": 6,
+      "agent_lines_removed": 6,
+      "user_added_per_file": {
+        ".go.mod.~undo-tree~": 4
+      }
+    }
+  ]
+}
