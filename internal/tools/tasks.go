@@ -42,14 +42,15 @@ type GetTasksOutput struct {
 }
 
 type UpdateTaskInput struct {
-	TaskID      string   `json:"task_id,omitempty" jsonschema:"Task ID to update (preferred over task_name)"`
-	TaskName    string   `json:"task_name,omitempty" jsonschema:"Name/content of the task to search for and update"`
-	Content     string   `json:"content,omitempty" jsonschema:"New content/title for the task (optional)"`
-	Description string   `json:"description,omitempty" jsonschema:"New description for the task (optional)"`
-	DueString   string   `json:"due_string,omitempty" jsonschema:"New due date in natural language (optional)"`
-	Priority    int      `json:"priority,omitempty" jsonschema:"New priority level from 1 (normal) to 4 (urgent) (optional)"`
-	Labels      []string `json:"labels,omitempty" jsonschema:"New labels for the task (optional)"`
-	AssigneeID  string   `json:"assignee_id,omitempty" jsonschema:"User ID to assign the task to (optional)"`
+	TaskID       string   `json:"task_id,omitempty" jsonschema:"Task ID to update (preferred over task_name)"`
+	TaskName     string   `json:"task_name,omitempty" jsonschema:"Name/content of the task to search for and update"`
+	Content      string   `json:"content,omitempty" jsonschema:"New content/title for the task (optional)"`
+	Description  string   `json:"description,omitempty" jsonschema:"New description for the task (optional)"`
+	DueString    string   `json:"due_string,omitempty" jsonschema:"New due date in natural language (optional)"`
+	Priority     int      `json:"priority,omitempty" jsonschema:"New priority level from 1 (normal) to 4 (urgent) (optional)"`
+	Labels       []string `json:"labels,omitempty" jsonschema:"New labels for the task (optional)"`
+	AssigneeID   string   `json:"assignee_id,omitempty" jsonschema:"User ID to assign the task to (optional)"`
+	DeadlineDate string   `json:"deadline_date,omitempty" jsonschema:"New deadline date in YYYY-MM-DD format (optional)"`
 }
 
 type UpdateTaskOutput struct {
@@ -255,6 +256,9 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 		}
 		if input.AssigneeID != "" {
 			body["assignee_id"] = input.AssigneeID
+		}
+		if input.DeadlineDate != "" {
+			body["deadline_date"] = input.DeadlineDate
 		}
 
 		updated, err := c.UpdateTask(id, body)

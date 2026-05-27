@@ -146,6 +146,21 @@ func (c *Client) UpdateTask(id string, body map[string]any) (*models.Task, error
 	return &task, nil
 }
 
+// MoveTask moves a task to another project, section, or parent.
+// The body must set exactly one of project_id, section_id, parent_id.
+func (c *Client) MoveTask(id string, body map[string]any) (*models.Task, error) {
+	data, err := c.do("POST", "/tasks/"+id+"/move", body)
+	if err != nil {
+		return nil, err
+	}
+
+	var task models.Task
+	if err := json.Unmarshal(data, &task); err != nil {
+		return nil, fmt.Errorf("failed to parse task: %w", err)
+	}
+	return &task, nil
+}
+
 // DeleteTask deletes a task.
 func (c *Client) DeleteTask(id string) error {
 	_, err := c.do("DELETE", "/tasks/"+id, nil)

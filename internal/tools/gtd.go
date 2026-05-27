@@ -32,8 +32,9 @@ type WeeklyReviewOutput struct {
 type MoveTaskInput struct {
 	TaskID    string `json:"task_id,omitempty" jsonschema:"Task ID to move (preferred over task_name)"`
 	TaskName  string `json:"task_name,omitempty" jsonschema:"Name of the task to search for and move"`
-	ProjectID string `json:"project_id,omitempty" jsonschema:"Destination project ID (optional)"`
-	SectionID string `json:"section_id,omitempty" jsonschema:"Destination section ID (optional)"`
+	ProjectID string `json:"project_id,omitempty" jsonschema:"Destination project ID. Set exactly one of project_id, section_id, parent_id."`
+	SectionID string `json:"section_id,omitempty" jsonschema:"Destination section ID. Set exactly one of project_id, section_id, parent_id."`
+	ParentID  string `json:"parent_id,omitempty" jsonschema:"Destination parent task ID. Set exactly one of project_id, section_id, parent_id."`
 }
 type MoveTaskOutput struct {
 	Success bool   `json:"success"`
@@ -210,7 +211,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 	// --- todoist_move_task ---
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_move_task",
-		Description: "Move a task to a different project and/or section",
+		Description: "Move a task to a different project, section, or parent. Set exactly one of project_id, section_id, parent_id.",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input MoveTaskInput) (*mcp.CallToolResult, MoveTaskOutput, error) {
 		id, originalName, err := resolveTaskID(c, input.TaskID, input.TaskName)
 		if err != nil {
@@ -222,14 +223,25 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		}
 
 		body := map[string]any{}
+		dests := 0
 		if input.ProjectID != "" {
 			body["project_id"] = input.ProjectID
+			dests++
 		}
 		if input.SectionID != "" {
 			body["section_id"] = input.SectionID
+			dests++
+		}
+		if input.ParentID != "" {
+			body["parent_id"] = input.ParentID
+			dests++
+		}
+		if dests != 1 {
+			msg := "exactly one of project_id, section_id, parent_id must be set"
+			return textResult(msg, true), MoveTaskOutput{Success: false, Message: msg}, nil
 		}
 
-		_, err = c.UpdateTask(id, body)
+		_, err = c.MoveTask(id, body)
 		if err != nil {
 			return nil, MoveTaskOutput{Success: false, Message: err.Error()}, err
 		}
@@ -239,11 +251,13 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 			label = id
 		}
 		msg := fmt.Sprintf("Successfully moved task \"%s\"", label)
-		if input.ProjectID != "" {
+		switch {
+		case input.ProjectID != "":
 			msg += fmt.Sprintf(" to project %s", input.ProjectID)
-		}
-		if input.SectionID != "" {
-			msg += fmt.Sprintf(" section %s", input.SectionID)
+		case input.SectionID != "":
+			msg += fmt.Sprintf(" to section %s", input.SectionID)
+		case input.ParentID != "":
+			msg += fmt.Sprintf(" under parent %s", input.ParentID)
 		}
 		return textResult(msg, false), MoveTaskOutput{Success: true, Message: msg}, nil
 	})
