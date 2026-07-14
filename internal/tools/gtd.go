@@ -222,18 +222,18 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 			return textResult(msg, true), MoveTaskOutput{Success: false, Message: msg}, nil
 		}
 
-		body := map[string]any{}
+		moveReq := todoist.MoveTaskRequest{}
 		dests := 0
 		if input.ProjectID != "" {
-			body["project_id"] = input.ProjectID
+			moveReq.ProjectID = todoist.Ptr(input.ProjectID)
 			dests++
 		}
 		if input.SectionID != "" {
-			body["section_id"] = input.SectionID
+			moveReq.SectionID = todoist.Ptr(input.SectionID)
 			dests++
 		}
 		if input.ParentID != "" {
-			body["parent_id"] = input.ParentID
+			moveReq.ParentID = todoist.Ptr(input.ParentID)
 			dests++
 		}
 		if dests != 1 {
@@ -241,7 +241,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 			return textResult(msg, true), MoveTaskOutput{Success: false, Message: msg}, nil
 		}
 
-		_, err = c.MoveTask(ctx, id, body)
+		_, err = c.MoveTask(ctx, id, moveReq)
 		if err != nil {
 			return nil, MoveTaskOutput{Success: false, Message: err.Error()}, err
 		}
@@ -271,27 +271,27 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		var lines []string
 
 		for _, item := range input.Tasks {
-			body := map[string]any{"content": item.Content}
+			createReq := todoist.CreateTaskRequest{Content: item.Content}
 			if item.Description != "" {
-				body["description"] = item.Description
+				createReq.Description = todoist.Ptr(item.Description)
 			}
 			if item.DueString != "" {
-				body["due_string"] = item.DueString
+				createReq.DueString = todoist.Ptr(item.DueString)
 			}
 			if item.Priority > 0 && item.Priority <= 4 {
-				body["priority"] = item.Priority
+				createReq.Priority = todoist.Ptr(item.Priority)
 			}
 			if item.ProjectID != "" {
-				body["project_id"] = item.ProjectID
+				createReq.ProjectID = todoist.Ptr(item.ProjectID)
 			}
 			if item.SectionID != "" {
-				body["section_id"] = item.SectionID
+				createReq.SectionID = todoist.Ptr(item.SectionID)
 			}
 			if len(item.Labels) > 0 {
-				body["labels"] = item.Labels
+				createReq.Labels = item.Labels
 			}
 
-			task, err := c.CreateTask(ctx, body)
+			task, err := c.CreateTask(ctx, createReq)
 			if err != nil {
 				failed++
 				lines = append(lines, fmt.Sprintf("FAILED: %s — %s", item.Content, err.Error()))

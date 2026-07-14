@@ -119,9 +119,43 @@ func (c *Client) GetTask(ctx context.Context, id string) (*models.Task, error) {
 	return &task, nil
 }
 
+// CreateTaskRequest is the request body for creating a task.
+type CreateTaskRequest struct {
+	Content     string   `json:"content"`
+	Description *string  `json:"description,omitempty"`
+	DueString   *string  `json:"due_string,omitempty"`
+	Priority    *int     `json:"priority,omitempty"`
+	ProjectID   *string  `json:"project_id,omitempty"`
+	SectionID   *string  `json:"section_id,omitempty"`
+	ParentID    *string  `json:"parent_id,omitempty"`
+	Labels      []string `json:"labels,omitempty"`
+	AssigneeID  *string  `json:"assignee_id,omitempty"`
+}
+
+// UpdateTaskRequest is the request body for updating a task.
+//
+// Labels is *[]string so a pointer to an empty slice can express
+// "clear all labels"; omitempty on a plain slice would drop it.
+type UpdateTaskRequest struct {
+	Content      *string   `json:"content,omitempty"`
+	Description  *string   `json:"description,omitempty"`
+	DueString    *string   `json:"due_string,omitempty"`
+	Priority     *int      `json:"priority,omitempty"`
+	Labels       *[]string `json:"labels,omitempty"`
+	AssigneeID   *string   `json:"assignee_id,omitempty"`
+	DeadlineDate *string   `json:"deadline_date,omitempty"`
+}
+
+// MoveTaskRequest moves a task. Set exactly one field.
+type MoveTaskRequest struct {
+	ProjectID *string `json:"project_id,omitempty"`
+	SectionID *string `json:"section_id,omitempty"`
+	ParentID  *string `json:"parent_id,omitempty"`
+}
+
 // CreateTask creates a new task.
-func (c *Client) CreateTask(ctx context.Context, body map[string]any) (*models.Task, error) {
-	data, err := c.do(ctx, "POST", "/tasks", body)
+func (c *Client) CreateTask(ctx context.Context, req CreateTaskRequest) (*models.Task, error) {
+	data, err := c.do(ctx, "POST", "/tasks", req)
 	if err != nil {
 		return nil, err
 	}
@@ -134,8 +168,8 @@ func (c *Client) CreateTask(ctx context.Context, body map[string]any) (*models.T
 }
 
 // UpdateTask updates an existing task.
-func (c *Client) UpdateTask(ctx context.Context, id string, body map[string]any) (*models.Task, error) {
-	data, err := c.do(ctx, "POST", "/tasks/"+id, body)
+func (c *Client) UpdateTask(ctx context.Context, id string, req UpdateTaskRequest) (*models.Task, error) {
+	data, err := c.do(ctx, "POST", "/tasks/"+id, req)
 	if err != nil {
 		return nil, err
 	}
@@ -148,9 +182,9 @@ func (c *Client) UpdateTask(ctx context.Context, id string, body map[string]any)
 }
 
 // MoveTask moves a task to another project, section, or parent.
-// The body must set exactly one of project_id, section_id, parent_id.
-func (c *Client) MoveTask(ctx context.Context, id string, body map[string]any) (*models.Task, error) {
-	data, err := c.do(ctx, "POST", "/tasks/"+id+"/move", body)
+// The request must set exactly one of ProjectID, SectionID, ParentID.
+func (c *Client) MoveTask(ctx context.Context, id string, req MoveTaskRequest) (*models.Task, error) {
+	data, err := c.do(ctx, "POST", "/tasks/"+id+"/move", req)
 	if err != nil {
 		return nil, err
 	}

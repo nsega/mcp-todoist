@@ -121,33 +121,33 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_create_task",
 		Description: "Create a new task in Todoist with optional description, due date, priority, project, section, labels, and assignee",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateTaskInput) (*mcp.CallToolResult, CreateTaskOutput, error) {
-		body := map[string]any{"content": input.Content}
+		createReq := todoist.CreateTaskRequest{Content: input.Content}
 		if input.Description != "" {
-			body["description"] = input.Description
+			createReq.Description = todoist.Ptr(input.Description)
 		}
 		if input.DueString != "" {
-			body["due_string"] = input.DueString
+			createReq.DueString = todoist.Ptr(input.DueString)
 		}
 		if input.Priority > 0 && input.Priority <= 4 {
-			body["priority"] = input.Priority
+			createReq.Priority = todoist.Ptr(input.Priority)
 		}
 		if input.ProjectID != "" {
-			body["project_id"] = input.ProjectID
+			createReq.ProjectID = todoist.Ptr(input.ProjectID)
 		}
 		if input.SectionID != "" {
-			body["section_id"] = input.SectionID
+			createReq.SectionID = todoist.Ptr(input.SectionID)
 		}
 		if input.ParentID != "" {
-			body["parent_id"] = input.ParentID
+			createReq.ParentID = todoist.Ptr(input.ParentID)
 		}
 		if len(input.Labels) > 0 {
-			body["labels"] = input.Labels
+			createReq.Labels = input.Labels
 		}
 		if input.AssigneeID != "" {
-			body["assignee_id"] = input.AssigneeID
+			createReq.AssigneeID = todoist.Ptr(input.AssigneeID)
 		}
 
-		task, err := c.CreateTask(ctx, body)
+		task, err := c.CreateTask(ctx, createReq)
 		if err != nil {
 			return nil, CreateTaskOutput{Success: false, Message: err.Error()}, err
 		}
@@ -238,30 +238,30 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 			return textResult(msg, true), UpdateTaskOutput{Success: false, Message: msg}, nil
 		}
 
-		body := map[string]any{}
+		updateReq := todoist.UpdateTaskRequest{}
 		if input.Content != "" {
-			body["content"] = input.Content
+			updateReq.Content = todoist.Ptr(input.Content)
 		}
 		if input.Description != "" {
-			body["description"] = input.Description
+			updateReq.Description = todoist.Ptr(input.Description)
 		}
 		if input.DueString != "" {
-			body["due_string"] = input.DueString
+			updateReq.DueString = todoist.Ptr(input.DueString)
 		}
 		if input.Priority > 0 && input.Priority <= 4 {
-			body["priority"] = input.Priority
+			updateReq.Priority = todoist.Ptr(input.Priority)
 		}
 		if len(input.Labels) > 0 {
-			body["labels"] = input.Labels
+			updateReq.Labels = todoist.Ptr(input.Labels)
 		}
 		if input.AssigneeID != "" {
-			body["assignee_id"] = input.AssigneeID
+			updateReq.AssigneeID = todoist.Ptr(input.AssigneeID)
 		}
 		if input.DeadlineDate != "" {
-			body["deadline_date"] = input.DeadlineDate
+			updateReq.DeadlineDate = todoist.Ptr(input.DeadlineDate)
 		}
 
-		updated, err := c.UpdateTask(ctx, id, body)
+		updated, err := c.UpdateTask(ctx, id, updateReq)
 		if err != nil {
 			return nil, UpdateTaskOutput{Success: false, Message: err.Error()}, err
 		}

@@ -83,7 +83,7 @@ func TestCreateTask(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.CreateTask(context.Background(), map[string]any{"content": "New task"})
+	task, err := c.CreateTask(context.Background(), CreateTaskRequest{Content: "New task"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,7 +101,7 @@ func TestUpdateTask(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.UpdateTask(context.Background(), "10", map[string]any{"content": "Updated"})
+	task, err := c.UpdateTask(context.Background(), "10", UpdateTaskRequest{Content: Ptr("Updated")})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -119,7 +119,7 @@ func TestMoveTask(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.MoveTask(context.Background(), "10", map[string]any{"project_id": "42"})
+	task, err := c.MoveTask(context.Background(), "10", MoveTaskRequest{ProjectID: Ptr("42")})
 	if err != nil {
 		t.Fatal(err)
 	}
