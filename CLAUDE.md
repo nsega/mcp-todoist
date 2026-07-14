@@ -3,7 +3,7 @@
 ## Project Overview
 
 Go MCP server for Todoist. Communicates via stdio (stdout = MCP protocol, stderr = logs).
-Built with [go-sdk v1.4.0](https://github.com/modelcontextprotocol/go-sdk).
+Built with [go-sdk v1.6.1](https://github.com/modelcontextprotocol/go-sdk).
 
 ## Architecture
 
