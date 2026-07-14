@@ -1,0 +1,83 @@
+{
+  "cli_version": "0.7.3",
+  "checkpoint_id": "5ada5d9d38b3",
+  "session_id": "02fd47ee-1044-4d5c-9c43-0776a9410f0a",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-14T17:11:05.981072Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "docs/superpowers/specs/2026-07-14-tech-debt-refactor-design.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-fable-5",
+  "turn_id": "560c4117c11d",
+  "token_usage": {
+    "input_tokens": 23,
+    "cache_creation_tokens": 119516,
+    "cache_read_tokens": 655029,
+    "output_tokens": 13533,
+    "api_call_count": 12
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_014hYwKjG3LZCVBvWvdjbQHe",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "superpowers:brainstorming"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "560c4117c11d",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 25,
+        "end": 26,
+        "entry_ids": [
+          "814ea820-845e-4a87-9b1c-15fe9ff2bc1f"
+        ],
+        "tool_use_id": "toolu_014hYwKjG3LZCVBvWvdjbQHe"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_014hYwKjG3LZCVBvWvdjbQHe"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: superpowers:brainstorming",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-14T17:11:05.973793Z",
+    "agent_lines": 158,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 158,
+    "total_lines_changed": 158,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 4,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".go.mod.~undo-tree~": 4
+      }
+    }
+  ]
+}
