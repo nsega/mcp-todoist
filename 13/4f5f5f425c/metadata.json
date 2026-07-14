@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.3",
+  "checkpoint_id": "134f5f5f425c",
+  "strategy": "manual-commit",
+  "branch": "refactor/stage-1-repo-hygiene",
+  "checkpoints_count": 0,
+  "files_touched": [
+    ".gitignore"
+  ],
+  "sessions": [
+    {
+      "metadata": "/13/4f5f5f425c/0/metadata.json",
+      "transcript": "/13/4f5f5f425c/0/full.jsonl",
+      "content_hash": "/13/4f5f5f425c/0/content_hash.txt",
+      "prompt": "/13/4f5f5f425c/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 11,
+    "cache_creation_tokens": 22567,
+    "cache_read_tokens": 942735,
+    "output_tokens": 6106,
+    "api_call_count": 6
+  }
+}
