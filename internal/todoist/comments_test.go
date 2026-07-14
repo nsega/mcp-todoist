@@ -36,7 +36,7 @@ func TestCreateComment(t *testing.T) {
 	})
 	defer srv.Close()
 
-	cm, err := c.CreateComment(context.Background(), CreateCommentRequest{Content: "New comment", TaskID: Ptr("42")})
+	cm, err := c.CreateComment(context.Background(), CreateCommentRequest{Content: "New comment", TaskID: new("42")})
 	if err != nil {
 		t.Fatal(err)
 	}

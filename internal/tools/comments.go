@@ -74,10 +74,10 @@ func registerCommentTools(s *mcp.Server, c *todoist.Client) {
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateCommentInput) (*mcp.CallToolResult, CreateCommentOutput, error) {
 		createReq := todoist.CreateCommentRequest{Content: input.Content}
 		if input.TaskID != "" {
-			createReq.TaskID = todoist.Ptr(input.TaskID)
+			createReq.TaskID = new(input.TaskID)
 		}
 		if input.ProjectID != "" {
-			createReq.ProjectID = todoist.Ptr(input.ProjectID)
+			createReq.ProjectID = new(input.ProjectID)
 		}
 		cm, err := c.CreateComment(ctx, createReq)
 		if err != nil {

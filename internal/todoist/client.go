@@ -38,9 +38,6 @@ func WithBaseURL(url string) Option {
 	return func(cl *Client) { cl.baseURL = url }
 }
 
-// Ptr returns a pointer to v. Convenience for building request structs.
-func Ptr[T any](v T) *T { return &v }
-
 // NewClient creates a new Todoist API client.
 func NewClient(token string, opts ...Option) *Client {
 	c := &Client{

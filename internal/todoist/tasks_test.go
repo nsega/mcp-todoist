@@ -101,7 +101,7 @@ func TestUpdateTask(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.UpdateTask(context.Background(), "10", UpdateTaskRequest{Content: Ptr("Updated")})
+	task, err := c.UpdateTask(context.Background(), "10", UpdateTaskRequest{Content: new("Updated")})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -119,7 +119,7 @@ func TestMoveTask(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.MoveTask(context.Background(), "10", MoveTaskRequest{ProjectID: Ptr("42")})
+	task, err := c.MoveTask(context.Background(), "10", MoveTaskRequest{ProjectID: new("42")})
 	if err != nil {
 		t.Fatal(err)
 	}

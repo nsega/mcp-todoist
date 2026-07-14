@@ -123,28 +123,28 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateTaskInput) (*mcp.CallToolResult, CreateTaskOutput, error) {
 		createReq := todoist.CreateTaskRequest{Content: input.Content}
 		if input.Description != "" {
-			createReq.Description = todoist.Ptr(input.Description)
+			createReq.Description = new(input.Description)
 		}
 		if input.DueString != "" {
-			createReq.DueString = todoist.Ptr(input.DueString)
+			createReq.DueString = new(input.DueString)
 		}
 		if input.Priority > 0 && input.Priority <= 4 {
-			createReq.Priority = todoist.Ptr(input.Priority)
+			createReq.Priority = new(input.Priority)
 		}
 		if input.ProjectID != "" {
-			createReq.ProjectID = todoist.Ptr(input.ProjectID)
+			createReq.ProjectID = new(input.ProjectID)
 		}
 		if input.SectionID != "" {
-			createReq.SectionID = todoist.Ptr(input.SectionID)
+			createReq.SectionID = new(input.SectionID)
 		}
 		if input.ParentID != "" {
-			createReq.ParentID = todoist.Ptr(input.ParentID)
+			createReq.ParentID = new(input.ParentID)
 		}
 		if len(input.Labels) > 0 {
 			createReq.Labels = input.Labels
 		}
 		if input.AssigneeID != "" {
-			createReq.AssigneeID = todoist.Ptr(input.AssigneeID)
+			createReq.AssigneeID = new(input.AssigneeID)
 		}
 
 		task, err := c.CreateTask(ctx, createReq)
@@ -240,25 +240,25 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 
 		updateReq := todoist.UpdateTaskRequest{}
 		if input.Content != "" {
-			updateReq.Content = todoist.Ptr(input.Content)
+			updateReq.Content = new(input.Content)
 		}
 		if input.Description != "" {
-			updateReq.Description = todoist.Ptr(input.Description)
+			updateReq.Description = new(input.Description)
 		}
 		if input.DueString != "" {
-			updateReq.DueString = todoist.Ptr(input.DueString)
+			updateReq.DueString = new(input.DueString)
 		}
 		if input.Priority > 0 && input.Priority <= 4 {
-			updateReq.Priority = todoist.Ptr(input.Priority)
+			updateReq.Priority = new(input.Priority)
 		}
 		if len(input.Labels) > 0 {
-			updateReq.Labels = todoist.Ptr(input.Labels)
+			updateReq.Labels = new(input.Labels)
 		}
 		if input.AssigneeID != "" {
-			updateReq.AssigneeID = todoist.Ptr(input.AssigneeID)
+			updateReq.AssigneeID = new(input.AssigneeID)
 		}
 		if input.DeadlineDate != "" {
-			updateReq.DeadlineDate = todoist.Ptr(input.DeadlineDate)
+			updateReq.DeadlineDate = new(input.DeadlineDate)
 		}
 
 		updated, err := c.UpdateTask(ctx, id, updateReq)

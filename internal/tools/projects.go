@@ -123,16 +123,16 @@ func registerProjectTools(s *mcp.Server, c *todoist.Client) {
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateProjectInput) (*mcp.CallToolResult, CreateProjectOutput, error) {
 		createReq := todoist.CreateProjectRequest{Name: input.Name}
 		if input.ParentID != "" {
-			createReq.ParentID = todoist.Ptr(input.ParentID)
+			createReq.ParentID = new(input.ParentID)
 		}
 		if input.Color != "" {
-			createReq.Color = todoist.Ptr(input.Color)
+			createReq.Color = new(input.Color)
 		}
 		if input.IsFavorite {
-			createReq.IsFavorite = todoist.Ptr(true)
+			createReq.IsFavorite = new(true)
 		}
 		if input.ViewStyle != "" {
-			createReq.ViewStyle = todoist.Ptr(input.ViewStyle)
+			createReq.ViewStyle = new(input.ViewStyle)
 		}
 		p, err := c.CreateProject(ctx, createReq)
 		if err != nil {
@@ -149,10 +149,10 @@ func registerProjectTools(s *mcp.Server, c *todoist.Client) {
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateProjectInput) (*mcp.CallToolResult, UpdateProjectOutput, error) {
 		updateReq := todoist.UpdateProjectRequest{}
 		if input.Name != "" {
-			updateReq.Name = todoist.Ptr(input.Name)
+			updateReq.Name = new(input.Name)
 		}
 		if input.Color != "" {
-			updateReq.Color = todoist.Ptr(input.Color)
+			updateReq.Color = new(input.Color)
 		}
 		if input.IsFavorite != nil {
 			updateReq.IsFavorite = input.IsFavorite

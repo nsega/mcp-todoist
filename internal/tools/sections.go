@@ -73,7 +73,7 @@ func registerSectionTools(s *mcp.Server, c *todoist.Client) {
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateSectionInput) (*mcp.CallToolResult, CreateSectionOutput, error) {
 		createReq := todoist.CreateSectionRequest{Name: input.Name, ProjectID: input.ProjectID}
 		if input.Order > 0 {
-			createReq.SectionOrder = todoist.Ptr(input.Order)
+			createReq.SectionOrder = new(input.Order)
 		}
 		sec, err := c.CreateSection(ctx, createReq)
 		if err != nil {

@@ -225,15 +225,15 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		moveReq := todoist.MoveTaskRequest{}
 		dests := 0
 		if input.ProjectID != "" {
-			moveReq.ProjectID = todoist.Ptr(input.ProjectID)
+			moveReq.ProjectID = new(input.ProjectID)
 			dests++
 		}
 		if input.SectionID != "" {
-			moveReq.SectionID = todoist.Ptr(input.SectionID)
+			moveReq.SectionID = new(input.SectionID)
 			dests++
 		}
 		if input.ParentID != "" {
-			moveReq.ParentID = todoist.Ptr(input.ParentID)
+			moveReq.ParentID = new(input.ParentID)
 			dests++
 		}
 		if dests != 1 {
@@ -273,19 +273,19 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		for _, item := range input.Tasks {
 			createReq := todoist.CreateTaskRequest{Content: item.Content}
 			if item.Description != "" {
-				createReq.Description = todoist.Ptr(item.Description)
+				createReq.Description = new(item.Description)
 			}
 			if item.DueString != "" {
-				createReq.DueString = todoist.Ptr(item.DueString)
+				createReq.DueString = new(item.DueString)
 			}
 			if item.Priority > 0 && item.Priority <= 4 {
-				createReq.Priority = todoist.Ptr(item.Priority)
+				createReq.Priority = new(item.Priority)
 			}
 			if item.ProjectID != "" {
-				createReq.ProjectID = todoist.Ptr(item.ProjectID)
+				createReq.ProjectID = new(item.ProjectID)
 			}
 			if item.SectionID != "" {
-				createReq.SectionID = todoist.Ptr(item.SectionID)
+				createReq.SectionID = new(item.SectionID)
 			}
 			if len(item.Labels) > 0 {
 				createReq.Labels = item.Labels
