@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -10,7 +11,7 @@ import (
 
 // GetComments returns comments for a task or project.
 // Exactly one of taskID or projectID should be non-empty.
-func (c *Client) GetComments(taskID, projectID string) ([]models.Comment, error) {
+func (c *Client) GetComments(ctx context.Context, taskID, projectID string) ([]models.Comment, error) {
 	endpoint := "/comments"
 	values := url.Values{}
 	if taskID != "" {
@@ -22,7 +23,7 @@ func (c *Client) GetComments(taskID, projectID string) ([]models.Comment, error)
 		endpoint += "?" + values.Encode()
 	}
 
-	data, err := c.do("GET", endpoint, nil)
+	data, err := c.do(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -35,8 +36,8 @@ func (c *Client) GetComments(taskID, projectID string) ([]models.Comment, error)
 }
 
 // CreateComment creates a new comment.
-func (c *Client) CreateComment(body map[string]any) (*models.Comment, error) {
-	data, err := c.do("POST", "/comments", body)
+func (c *Client) CreateComment(ctx context.Context, body map[string]any) (*models.Comment, error) {
+	data, err := c.do(ctx, "POST", "/comments", body)
 	if err != nil {
 		return nil, err
 	}
@@ -49,8 +50,8 @@ func (c *Client) CreateComment(body map[string]any) (*models.Comment, error) {
 }
 
 // UpdateComment updates an existing comment.
-func (c *Client) UpdateComment(id string, body map[string]any) (*models.Comment, error) {
-	data, err := c.do("POST", "/comments/"+id, body)
+func (c *Client) UpdateComment(ctx context.Context, id string, body map[string]any) (*models.Comment, error) {
+	data, err := c.do(ctx, "POST", "/comments/"+id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +64,7 @@ func (c *Client) UpdateComment(id string, body map[string]any) (*models.Comment,
 }
 
 // DeleteComment deletes a comment.
-func (c *Client) DeleteComment(id string) error {
-	_, err := c.do("DELETE", "/comments/"+id, nil)
+func (c *Client) DeleteComment(ctx context.Context, id string) error {
+	_, err := c.do(ctx, "DELETE", "/comments/"+id, nil)
 	return err
 }

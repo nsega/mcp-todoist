@@ -68,7 +68,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		Description: "Get all inbox tasks grouped by age (today, this week, older) for GTD inbox processing",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input InboxReviewInput) (*mcp.CallToolResult, InboxReviewOutput, error) {
 		// Find inbox project.
-		projects, err := c.GetProjects()
+		projects, err := c.GetProjects(ctx)
 		if err != nil {
 			return nil, InboxReviewOutput{}, err
 		}
@@ -85,7 +85,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 			return textResult(msg, true), InboxReviewOutput{Success: false, Message: msg}, nil
 		}
 
-		tasks, err := c.GetTasks(inboxID)
+		tasks, err := c.GetTasks(ctx, inboxID)
 		if err != nil {
 			return nil, InboxReviewOutput{}, err
 		}
@@ -142,12 +142,12 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_weekly_review",
 		Description: "Comprehensive weekly review: projects with task counts, overdue tasks, tasks with no due date",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input WeeklyReviewInput) (*mcp.CallToolResult, WeeklyReviewOutput, error) {
-		projects, err := c.GetProjects()
+		projects, err := c.GetProjects(ctx)
 		if err != nil {
 			return nil, WeeklyReviewOutput{}, err
 		}
 
-		allTasks, err := c.GetTasks("")
+		allTasks, err := c.GetTasks(ctx, "")
 		if err != nil {
 			return nil, WeeklyReviewOutput{}, err
 		}
@@ -159,7 +159,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		}
 
 		// Overdue tasks.
-		overdueTasks, err := c.GetTasksByFilter("overdue")
+		overdueTasks, err := c.GetTasksByFilter(ctx, "overdue")
 		if err != nil {
 			overdueTasks = nil // non-fatal
 		}
@@ -213,7 +213,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_move_task",
 		Description: "Move a task to a different project, section, or parent. Set exactly one of project_id, section_id, parent_id.",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input MoveTaskInput) (*mcp.CallToolResult, MoveTaskOutput, error) {
-		id, originalName, err := resolveTaskID(c, input.TaskID, input.TaskName)
+		id, originalName, err := resolveTaskID(ctx, c, input.TaskID, input.TaskName)
 		if err != nil {
 			return nil, MoveTaskOutput{Success: false, Message: err.Error()}, err
 		}
@@ -241,7 +241,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 			return textResult(msg, true), MoveTaskOutput{Success: false, Message: msg}, nil
 		}
 
-		_, err = c.MoveTask(id, body)
+		_, err = c.MoveTask(ctx, id, body)
 		if err != nil {
 			return nil, MoveTaskOutput{Success: false, Message: err.Error()}, err
 		}
@@ -291,7 +291,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 				body["labels"] = item.Labels
 			}
 
-			task, err := c.CreateTask(body)
+			task, err := c.CreateTask(ctx, body)
 			if err != nil {
 				failed++
 				lines = append(lines, fmt.Sprintf("FAILED: %s — %s", item.Content, err.Error()))

@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"testing"
@@ -15,7 +16,7 @@ func TestGetProjects(t *testing.T) {
 	})
 	defer srv.Close()
 
-	projects, err := c.GetProjects()
+	projects, err := c.GetProjects(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +34,7 @@ func TestGetProject(t *testing.T) {
 	})
 	defer srv.Close()
 
-	p, err := c.GetProject("200")
+	p, err := c.GetProject(context.Background(), "200")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +59,7 @@ func TestCreateProject(t *testing.T) {
 	})
 	defer srv.Close()
 
-	p, err := c.CreateProject(map[string]any{"name": "New Project"})
+	p, err := c.CreateProject(context.Background(), map[string]any{"name": "New Project"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,7 +77,7 @@ func TestDeleteProject(t *testing.T) {
 	})
 	defer srv.Close()
 
-	if err := c.DeleteProject("300"); err != nil {
+	if err := c.DeleteProject(context.Background(), "300"); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -90,7 +91,7 @@ func TestArchiveProject(t *testing.T) {
 	})
 	defer srv.Close()
 
-	if err := c.ArchiveProject("300"); err != nil {
+	if err := c.ArchiveProject(context.Background(), "300"); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -104,7 +105,7 @@ func TestUnarchiveProject(t *testing.T) {
 	})
 	defer srv.Close()
 
-	if err := c.UnarchiveProject("300"); err != nil {
+	if err := c.UnarchiveProject(context.Background(), "300"); err != nil {
 		t.Fatal(err)
 	}
 }

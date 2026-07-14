@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -19,7 +20,7 @@ func TestGetTasks(t *testing.T) {
 	})
 	defer srv.Close()
 
-	tasks, err := c.GetTasks("")
+	tasks, err := c.GetTasks(context.Background(), "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +42,7 @@ func TestGetTasks_withProjectID(t *testing.T) {
 	})
 	defer srv.Close()
 
-	_, err := c.GetTasks("123")
+	_, err := c.GetTasks(context.Background(), "123")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,7 +57,7 @@ func TestGetTask(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.GetTask("42")
+	task, err := c.GetTask(context.Background(), "42")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,7 +83,7 @@ func TestCreateTask(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.CreateTask(map[string]any{"content": "New task"})
+	task, err := c.CreateTask(context.Background(), map[string]any{"content": "New task"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,7 +101,7 @@ func TestUpdateTask(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.UpdateTask("10", map[string]any{"content": "Updated"})
+	task, err := c.UpdateTask(context.Background(), "10", map[string]any{"content": "Updated"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +119,7 @@ func TestMoveTask(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.MoveTask("10", map[string]any{"project_id": "42"})
+	task, err := c.MoveTask(context.Background(), "10", map[string]any{"project_id": "42"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -136,7 +137,7 @@ func TestDeleteTask(t *testing.T) {
 	})
 	defer srv.Close()
 
-	if err := c.DeleteTask("5"); err != nil {
+	if err := c.DeleteTask(context.Background(), "5"); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -150,7 +151,7 @@ func TestCloseTask(t *testing.T) {
 	})
 	defer srv.Close()
 
-	if err := c.CloseTask("7"); err != nil {
+	if err := c.CloseTask(context.Background(), "7"); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -164,7 +165,7 @@ func TestReopenTask(t *testing.T) {
 	})
 	defer srv.Close()
 
-	if err := c.ReopenTask("7"); err != nil {
+	if err := c.ReopenTask(context.Background(), "7"); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -184,7 +185,7 @@ func TestGetTasksByFilter(t *testing.T) {
 	})
 	defer srv.Close()
 
-	tasks, err := c.GetTasksByFilter("today")
+	tasks, err := c.GetTasksByFilter(context.Background(), "today")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -213,7 +214,7 @@ func TestGetTasksByFilter_specialChars(t *testing.T) {
 	})
 	defer srv.Close()
 
-	_, err := c.GetTasksByFilter("today & @deep-research")
+	_, err := c.GetTasksByFilter(context.Background(), "today & @deep-research")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -229,7 +230,7 @@ func TestGetTasksByFilter_hashFilter(t *testing.T) {
 	})
 	defer srv.Close()
 
-	_, err := c.GetTasksByFilter("priority 1 & #Work")
+	_, err := c.GetTasksByFilter(context.Background(), "priority 1 & #Work")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -245,7 +246,7 @@ func TestGetTasksByFilter_labelFilter(t *testing.T) {
 	})
 	defer srv.Close()
 
-	tasks, err := c.GetTasksByFilter("@deep-research")
+	tasks, err := c.GetTasksByFilter(context.Background(), "@deep-research")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -264,7 +265,7 @@ func TestGetTasksByFilter_resultsKeyFallback(t *testing.T) {
 	})
 	defer srv.Close()
 
-	tasks, err := c.GetTasksByFilter("today")
+	tasks, err := c.GetTasksByFilter(context.Background(), "today")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -297,7 +298,7 @@ func TestGetTasksByFilter_pagination(t *testing.T) {
 	})
 	defer srv.Close()
 
-	tasks, err := c.GetTasksByFilter("today")
+	tasks, err := c.GetTasksByFilter(context.Background(), "today")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -320,7 +321,7 @@ func TestGetTasksByFilter_maxPagesGuard(t *testing.T) {
 	})
 	defer srv.Close()
 
-	tasks, err := c.GetTasksByFilter("today")
+	tasks, err := c.GetTasksByFilter(context.Background(), "today")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -349,7 +350,7 @@ func TestGetTasksByFilter_apiErrorOnSecondPage(t *testing.T) {
 	})
 	defer srv.Close()
 
-	_, err := c.GetTasksByFilter("today")
+	_, err := c.GetTasksByFilter(context.Background(), "today")
 	if err == nil {
 		t.Fatal("expected error when second page fails, got nil")
 	}
@@ -365,7 +366,7 @@ func TestGetTasksByFilter_apiError(t *testing.T) {
 	})
 	defer srv.Close()
 
-	_, err := c.GetTasksByFilter(")))invalid(((")
+	_, err := c.GetTasksByFilter(context.Background(), ")))invalid(((")
 	if err == nil {
 		t.Fatal("expected error for bad filter, got nil")
 	}
@@ -380,7 +381,7 @@ func TestGetTasksByFilter_emptyResult(t *testing.T) {
 	})
 	defer srv.Close()
 
-	tasks, err := c.GetTasksByFilter("@nonexistent-label")
+	tasks, err := c.GetTasksByFilter(context.Background(), "@nonexistent-label")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -400,7 +401,7 @@ func TestFindTaskByName_exactMatch(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.FindTaskByName("Buy groceries")
+	task, err := c.FindTaskByName(context.Background(), "Buy groceries")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -415,7 +416,7 @@ func TestFindTaskByName_partialMatch(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.FindTaskByName("team meeting")
+	task, err := c.FindTaskByName(context.Background(), "team meeting")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -430,7 +431,7 @@ func TestFindTaskByName_notFound(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.FindTaskByName("nonexistent")
+	task, err := c.FindTaskByName(context.Background(), "nonexistent")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -447,7 +448,7 @@ func TestFindTaskByName_whitespaceNormalization(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.FindTaskByName("Buy groceries and milk")
+	task, err := c.FindTaskByName(context.Background(), "Buy groceries and milk")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -465,7 +466,7 @@ func TestFindTaskByName_longTaskName(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.FindTaskByName(longName)
+	task, err := c.FindTaskByName(context.Background(), longName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -497,7 +498,7 @@ func TestFindTaskByName_pagination(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.FindTaskByName("TEST: verify MCP bug fixes")
+	task, err := c.FindTaskByName(context.Background(), "TEST: verify MCP bug fixes")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -531,7 +532,7 @@ func TestFindTaskByName_exactMatchPriorityAcrossPages(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.FindTaskByName("Buy groceries")
+	task, err := c.FindTaskByName(context.Background(), "Buy groceries")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -561,7 +562,7 @@ func TestFindTaskByName_notFoundAcrossPages(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.FindTaskByName("nonexistent across pages")
+	task, err := c.FindTaskByName(context.Background(), "nonexistent across pages")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -592,7 +593,7 @@ func TestFindTaskByName_apiErrorOnSecondPage(t *testing.T) {
 	})
 	defer srv.Close()
 
-	_, err := c.FindTaskByName("Target task")
+	_, err := c.FindTaskByName(context.Background(), "Target task")
 	if err == nil {
 		t.Fatal("expected error when second page fails, got nil")
 	}
@@ -612,7 +613,7 @@ func TestFindTaskByName_maxPagesGuard(t *testing.T) {
 	})
 	defer srv.Close()
 
-	task, err := c.FindTaskByName("nonexistent")
+	task, err := c.FindTaskByName(context.Background(), "nonexistent")
 	if err != nil {
 		t.Fatal(err)
 	}

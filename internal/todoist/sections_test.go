@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"net/http"
 	"testing"
 )
@@ -17,7 +18,7 @@ func TestGetSections(t *testing.T) {
 	})
 	defer srv.Close()
 
-	sections, err := c.GetSections("123")
+	sections, err := c.GetSections(context.Background(), "123")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +36,7 @@ func TestCreateSection(t *testing.T) {
 	})
 	defer srv.Close()
 
-	sec, err := c.CreateSection(map[string]any{"name": "In Progress", "project_id": "123"})
+	sec, err := c.CreateSection(context.Background(), map[string]any{"name": "In Progress", "project_id": "123"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +54,7 @@ func TestDeleteSection(t *testing.T) {
 	})
 	defer srv.Close()
 
-	if err := c.DeleteSection("s1"); err != nil {
+	if err := c.DeleteSection(context.Background(), "s1"); err != nil {
 		t.Fatal(err)
 	}
 }

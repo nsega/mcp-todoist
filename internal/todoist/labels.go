@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -8,8 +9,8 @@ import (
 )
 
 // GetLabels returns all personal labels.
-func (c *Client) GetLabels() ([]models.Label, error) {
-	data, err := c.do("GET", "/labels", nil)
+func (c *Client) GetLabels(ctx context.Context) ([]models.Label, error) {
+	data, err := c.do(ctx, "GET", "/labels", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -22,8 +23,8 @@ func (c *Client) GetLabels() ([]models.Label, error) {
 }
 
 // CreateLabel creates a new personal label.
-func (c *Client) CreateLabel(body map[string]any) (*models.Label, error) {
-	data, err := c.do("POST", "/labels", body)
+func (c *Client) CreateLabel(ctx context.Context, body map[string]any) (*models.Label, error) {
+	data, err := c.do(ctx, "POST", "/labels", body)
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +37,8 @@ func (c *Client) CreateLabel(body map[string]any) (*models.Label, error) {
 }
 
 // UpdateLabel updates an existing label.
-func (c *Client) UpdateLabel(id string, body map[string]any) (*models.Label, error) {
-	data, err := c.do("POST", "/labels/"+id, body)
+func (c *Client) UpdateLabel(ctx context.Context, id string, body map[string]any) (*models.Label, error) {
+	data, err := c.do(ctx, "POST", "/labels/"+id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +51,7 @@ func (c *Client) UpdateLabel(id string, body map[string]any) (*models.Label, err
 }
 
 // DeleteLabel deletes a label.
-func (c *Client) DeleteLabel(id string) error {
-	_, err := c.do("DELETE", "/labels/"+id, nil)
+func (c *Client) DeleteLabel(ctx context.Context, id string) error {
+	_, err := c.do(ctx, "DELETE", "/labels/"+id, nil)
 	return err
 }

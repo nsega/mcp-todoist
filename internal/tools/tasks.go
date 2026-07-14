@@ -90,14 +90,14 @@ type ReopenTaskOutput struct {
 
 // --- helpers ---
 
-func resolveTaskID(c *todoist.Client, id, name string) (string, string, error) {
+func resolveTaskID(ctx context.Context, c *todoist.Client, id, name string) (string, string, error) {
 	if id != "" {
 		return id, "", nil
 	}
 	if name == "" {
 		return "", "", fmt.Errorf("either task_id or task_name is required")
 	}
-	task, err := c.FindTaskByName(name)
+	task, err := c.FindTaskByName(ctx, name)
 	if err != nil {
 		return "", "", err
 	}
@@ -147,7 +147,7 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 			body["assignee_id"] = input.AssigneeID
 		}
 
-		task, err := c.CreateTask(body)
+		task, err := c.CreateTask(ctx, body)
 		if err != nil {
 			return nil, CreateTaskOutput{Success: false, Message: err.Error()}, err
 		}
@@ -173,9 +173,9 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 		var tasks []models.Task
 		var err error
 		if input.Filter != "" {
-			tasks, err = c.GetTasksByFilter(input.Filter)
+			tasks, err = c.GetTasksByFilter(ctx, input.Filter)
 		} else {
-			tasks, err = c.GetTasks(input.ProjectID)
+			tasks, err = c.GetTasks(ctx, input.ProjectID)
 		}
 		if err != nil {
 			return nil, GetTasksOutput{}, err
@@ -229,7 +229,7 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_update_task",
 		Description: "Update an existing task in Todoist by task_id or by searching by name",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateTaskInput) (*mcp.CallToolResult, UpdateTaskOutput, error) {
-		id, originalName, err := resolveTaskID(c, input.TaskID, input.TaskName)
+		id, originalName, err := resolveTaskID(ctx, c, input.TaskID, input.TaskName)
 		if err != nil {
 			return nil, UpdateTaskOutput{Success: false, Message: err.Error()}, err
 		}
@@ -261,7 +261,7 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 			body["deadline_date"] = input.DeadlineDate
 		}
 
-		updated, err := c.UpdateTask(id, body)
+		updated, err := c.UpdateTask(ctx, id, body)
 		if err != nil {
 			return nil, UpdateTaskOutput{Success: false, Message: err.Error()}, err
 		}
@@ -288,7 +288,7 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_delete_task",
 		Description: "Delete a task from Todoist by task_id or by searching by name",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input DeleteTaskInput) (*mcp.CallToolResult, DeleteTaskOutput, error) {
-		id, originalName, err := resolveTaskID(c, input.TaskID, input.TaskName)
+		id, originalName, err := resolveTaskID(ctx, c, input.TaskID, input.TaskName)
 		if err != nil {
 			return nil, DeleteTaskOutput{Success: false, Message: err.Error()}, err
 		}
@@ -297,7 +297,7 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 			return textResult(msg, true), DeleteTaskOutput{Success: false, Message: msg}, nil
 		}
 
-		if err := c.DeleteTask(id); err != nil {
+		if err := c.DeleteTask(ctx, id); err != nil {
 			return nil, DeleteTaskOutput{Success: false, Message: err.Error()}, err
 		}
 
@@ -313,7 +313,7 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_complete_task",
 		Description: "Mark a task as complete by task_id or by searching by name",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CompleteTaskInput) (*mcp.CallToolResult, CompleteTaskOutput, error) {
-		id, originalName, err := resolveTaskID(c, input.TaskID, input.TaskName)
+		id, originalName, err := resolveTaskID(ctx, c, input.TaskID, input.TaskName)
 		if err != nil {
 			return nil, CompleteTaskOutput{Success: false, Message: err.Error()}, err
 		}
@@ -322,7 +322,7 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 			return textResult(msg, true), CompleteTaskOutput{Success: false, Message: msg}, nil
 		}
 
-		if err := c.CloseTask(id); err != nil {
+		if err := c.CloseTask(ctx, id); err != nil {
 			return nil, CompleteTaskOutput{Success: false, Message: err.Error()}, err
 		}
 
@@ -338,7 +338,7 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_reopen_task",
 		Description: "Reopen a completed task by task_id or by searching by name",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input ReopenTaskInput) (*mcp.CallToolResult, ReopenTaskOutput, error) {
-		id, originalName, err := resolveTaskID(c, input.TaskID, input.TaskName)
+		id, originalName, err := resolveTaskID(ctx, c, input.TaskID, input.TaskName)
 		if err != nil {
 			return nil, ReopenTaskOutput{Success: false, Message: err.Error()}, err
 		}
@@ -347,7 +347,7 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 			return textResult(msg, true), ReopenTaskOutput{Success: false, Message: msg}, nil
 		}
 
-		if err := c.ReopenTask(id); err != nil {
+		if err := c.ReopenTask(ctx, id); err != nil {
 			return nil, ReopenTaskOutput{Success: false, Message: err.Error()}, err
 		}
 

@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -52,7 +53,7 @@ func NewClient(token string, opts ...Option) *Client {
 
 // do executes an HTTP request against the Todoist API and returns the
 // response body bytes. For responses with no content (204) it returns nil.
-func (c *Client) do(method, endpoint string, body any) ([]byte, error) {
+func (c *Client) do(ctx context.Context, method, endpoint string, body any) ([]byte, error) {
 	var reqBody io.Reader
 	if body != nil {
 		data, err := json.Marshal(body)
@@ -62,7 +63,7 @@ func (c *Client) do(method, endpoint string, body any) ([]byte, error) {
 		reqBody = strings.NewReader(string(data))
 	}
 
-	req, err := http.NewRequest(method, c.baseURL+endpoint, reqBody)
+	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+endpoint, reqBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

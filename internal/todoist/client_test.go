@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -44,7 +45,7 @@ func TestDo_setsAuthHeader(t *testing.T) {
 	})
 	defer srv.Close()
 
-	_, err := c.do("GET", "/test", nil)
+	_, err := c.do(context.Background(), "GET", "/test", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +58,7 @@ func TestDo_errorStatus(t *testing.T) {
 	})
 	defer srv.Close()
 
-	_, err := c.do("GET", "/test", nil)
+	_, err := c.do(context.Background(), "GET", "/test", nil)
 	if err == nil {
 		t.Fatal("expected error for 401")
 	}
@@ -74,7 +75,7 @@ func TestDo_sendsJSONBody(t *testing.T) {
 	})
 	defer srv.Close()
 
-	_, err := c.do("POST", "/test", map[string]string{"key": "val"})
+	_, err := c.do(context.Background(), "POST", "/test", map[string]string{"key": "val"})
 	if err != nil {
 		t.Fatal(err)
 	}

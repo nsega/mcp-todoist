@@ -48,7 +48,7 @@ func registerLabelTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_get_labels",
 		Description: "List all personal labels",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input GetLabelsInput) (*mcp.CallToolResult, GetLabelsOutput, error) {
-		labels, err := c.GetLabels()
+		labels, err := c.GetLabels(ctx)
 		if err != nil {
 			return nil, GetLabelsOutput{}, err
 		}
@@ -82,7 +82,7 @@ func registerLabelTools(s *mcp.Server, c *todoist.Client) {
 			body["is_favorite"] = true
 		}
 
-		l, err := c.CreateLabel(body)
+		l, err := c.CreateLabel(ctx, body)
 		if err != nil {
 			return nil, CreateLabelOutput{Success: false, Message: err.Error()}, err
 		}
@@ -103,7 +103,7 @@ func registerLabelTools(s *mcp.Server, c *todoist.Client) {
 			body["color"] = input.Color
 		}
 
-		l, err := c.UpdateLabel(input.LabelID, body)
+		l, err := c.UpdateLabel(ctx, input.LabelID, body)
 		if err != nil {
 			return nil, UpdateLabelOutput{Success: false, Message: err.Error()}, err
 		}
@@ -116,7 +116,7 @@ func registerLabelTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_delete_label",
 		Description: "Delete a label",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input DeleteLabelInput) (*mcp.CallToolResult, DeleteLabelOutput, error) {
-		if err := c.DeleteLabel(input.LabelID); err != nil {
+		if err := c.DeleteLabel(ctx, input.LabelID); err != nil {
 			return nil, DeleteLabelOutput{Success: false, Message: err.Error()}, err
 		}
 		msg := fmt.Sprintf("Successfully deleted label: %s", input.LabelID)

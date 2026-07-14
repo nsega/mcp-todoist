@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -9,7 +10,7 @@ import (
 )
 
 // GetSections returns sections, optionally filtered by project.
-func (c *Client) GetSections(projectID string) ([]models.Section, error) {
+func (c *Client) GetSections(ctx context.Context, projectID string) ([]models.Section, error) {
 	endpoint := "/sections"
 	if projectID != "" {
 		values := url.Values{}
@@ -17,7 +18,7 @@ func (c *Client) GetSections(projectID string) ([]models.Section, error) {
 		endpoint += "?" + values.Encode()
 	}
 
-	data, err := c.do("GET", endpoint, nil)
+	data, err := c.do(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -30,8 +31,8 @@ func (c *Client) GetSections(projectID string) ([]models.Section, error) {
 }
 
 // CreateSection creates a new section.
-func (c *Client) CreateSection(body map[string]any) (*models.Section, error) {
-	data, err := c.do("POST", "/sections", body)
+func (c *Client) CreateSection(ctx context.Context, body map[string]any) (*models.Section, error) {
+	data, err := c.do(ctx, "POST", "/sections", body)
 	if err != nil {
 		return nil, err
 	}
@@ -44,8 +45,8 @@ func (c *Client) CreateSection(body map[string]any) (*models.Section, error) {
 }
 
 // UpdateSection updates an existing section.
-func (c *Client) UpdateSection(id string, body map[string]any) (*models.Section, error) {
-	data, err := c.do("POST", "/sections/"+id, body)
+func (c *Client) UpdateSection(ctx context.Context, id string, body map[string]any) (*models.Section, error) {
+	data, err := c.do(ctx, "POST", "/sections/"+id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +59,7 @@ func (c *Client) UpdateSection(id string, body map[string]any) (*models.Section,
 }
 
 // DeleteSection deletes a section.
-func (c *Client) DeleteSection(id string) error {
-	_, err := c.do("DELETE", "/sections/"+id, nil)
+func (c *Client) DeleteSection(ctx context.Context, id string) error {
+	_, err := c.do(ctx, "DELETE", "/sections/"+id, nil)
 	return err
 }

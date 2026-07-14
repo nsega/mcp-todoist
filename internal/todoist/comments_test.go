@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"net/http"
 	"testing"
 )
@@ -17,7 +18,7 @@ func TestGetComments(t *testing.T) {
 	})
 	defer srv.Close()
 
-	comments, err := c.GetComments("42", "")
+	comments, err := c.GetComments(context.Background(), "42", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +36,7 @@ func TestCreateComment(t *testing.T) {
 	})
 	defer srv.Close()
 
-	cm, err := c.CreateComment(map[string]any{"content": "New comment", "task_id": "42"})
+	cm, err := c.CreateComment(context.Background(), map[string]any{"content": "New comment", "task_id": "42"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +56,7 @@ func TestGetComments_noParams(t *testing.T) {
 	})
 	defer srv.Close()
 
-	_, err := c.GetComments("", "")
+	_, err := c.GetComments(context.Background(), "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,7 +77,7 @@ func TestGetComments_byProject(t *testing.T) {
 	})
 	defer srv.Close()
 
-	_, err := c.GetComments("", "p1")
+	_, err := c.GetComments(context.Background(), "", "p1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -91,7 +92,7 @@ func TestDeleteComment(t *testing.T) {
 	})
 	defer srv.Close()
 
-	if err := c.DeleteComment("c1"); err != nil {
+	if err := c.DeleteComment(context.Background(), "c1"); err != nil {
 		t.Fatal(err)
 	}
 }
