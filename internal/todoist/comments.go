@@ -35,9 +35,21 @@ func (c *Client) GetComments(ctx context.Context, taskID, projectID string) ([]m
 	return page.Results, nil
 }
 
+// CreateCommentRequest is the request body for creating a comment.
+type CreateCommentRequest struct {
+	Content   string  `json:"content"`
+	TaskID    *string `json:"task_id,omitempty"`
+	ProjectID *string `json:"project_id,omitempty"`
+}
+
+// UpdateCommentRequest is the request body for updating a comment.
+type UpdateCommentRequest struct {
+	Content string `json:"content"`
+}
+
 // CreateComment creates a new comment.
-func (c *Client) CreateComment(ctx context.Context, body map[string]any) (*models.Comment, error) {
-	data, err := c.do(ctx, "POST", "/comments", body)
+func (c *Client) CreateComment(ctx context.Context, req CreateCommentRequest) (*models.Comment, error) {
+	data, err := c.do(ctx, "POST", "/comments", req)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +62,8 @@ func (c *Client) CreateComment(ctx context.Context, body map[string]any) (*model
 }
 
 // UpdateComment updates an existing comment.
-func (c *Client) UpdateComment(ctx context.Context, id string, body map[string]any) (*models.Comment, error) {
-	data, err := c.do(ctx, "POST", "/comments/"+id, body)
+func (c *Client) UpdateComment(ctx context.Context, id string, req UpdateCommentRequest) (*models.Comment, error) {
+	data, err := c.do(ctx, "POST", "/comments/"+id, req)
 	if err != nil {
 		return nil, err
 	}

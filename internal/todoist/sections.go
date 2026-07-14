@@ -30,9 +30,21 @@ func (c *Client) GetSections(ctx context.Context, projectID string) ([]models.Se
 	return page.Results, nil
 }
 
+// CreateSectionRequest is the request body for creating a section.
+type CreateSectionRequest struct {
+	Name         string `json:"name"`
+	ProjectID    string `json:"project_id"`
+	SectionOrder *int   `json:"section_order,omitempty"`
+}
+
+// UpdateSectionRequest is the request body for updating a section.
+type UpdateSectionRequest struct {
+	Name string `json:"name"`
+}
+
 // CreateSection creates a new section.
-func (c *Client) CreateSection(ctx context.Context, body map[string]any) (*models.Section, error) {
-	data, err := c.do(ctx, "POST", "/sections", body)
+func (c *Client) CreateSection(ctx context.Context, req CreateSectionRequest) (*models.Section, error) {
+	data, err := c.do(ctx, "POST", "/sections", req)
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +57,8 @@ func (c *Client) CreateSection(ctx context.Context, body map[string]any) (*model
 }
 
 // UpdateSection updates an existing section.
-func (c *Client) UpdateSection(ctx context.Context, id string, body map[string]any) (*models.Section, error) {
-	data, err := c.do(ctx, "POST", "/sections/"+id, body)
+func (c *Client) UpdateSection(ctx context.Context, id string, req UpdateSectionRequest) (*models.Section, error) {
+	data, err := c.do(ctx, "POST", "/sections/"+id, req)
 	if err != nil {
 		return nil, err
 	}

@@ -59,7 +59,7 @@ func TestCreateProject(t *testing.T) {
 	})
 	defer srv.Close()
 
-	p, err := c.CreateProject(context.Background(), map[string]any{"name": "New Project"})
+	p, err := c.CreateProject(context.Background(), CreateProjectRequest{Name: "New Project"})
 	if err != nil {
 		t.Fatal(err)
 	}

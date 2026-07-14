@@ -22,9 +22,22 @@ func (c *Client) GetLabels(ctx context.Context) ([]models.Label, error) {
 	return page.Results, nil
 }
 
+// CreateLabelRequest is the request body for creating a label.
+type CreateLabelRequest struct {
+	Name       string  `json:"name"`
+	Color      *string `json:"color,omitempty"`
+	IsFavorite *bool   `json:"is_favorite,omitempty"`
+}
+
+// UpdateLabelRequest is the request body for updating a label.
+type UpdateLabelRequest struct {
+	Name  *string `json:"name,omitempty"`
+	Color *string `json:"color,omitempty"`
+}
+
 // CreateLabel creates a new personal label.
-func (c *Client) CreateLabel(ctx context.Context, body map[string]any) (*models.Label, error) {
-	data, err := c.do(ctx, "POST", "/labels", body)
+func (c *Client) CreateLabel(ctx context.Context, req CreateLabelRequest) (*models.Label, error) {
+	data, err := c.do(ctx, "POST", "/labels", req)
 	if err != nil {
 		return nil, err
 	}
@@ -37,8 +50,8 @@ func (c *Client) CreateLabel(ctx context.Context, body map[string]any) (*models.
 }
 
 // UpdateLabel updates an existing label.
-func (c *Client) UpdateLabel(ctx context.Context, id string, body map[string]any) (*models.Label, error) {
-	data, err := c.do(ctx, "POST", "/labels/"+id, body)
+func (c *Client) UpdateLabel(ctx context.Context, id string, req UpdateLabelRequest) (*models.Label, error) {
+	data, err := c.do(ctx, "POST", "/labels/"+id, req)
 	if err != nil {
 		return nil, err
 	}

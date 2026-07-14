@@ -33,7 +33,7 @@ func TestCreateLabel(t *testing.T) {
 	})
 	defer srv.Close()
 
-	l, err := c.CreateLabel(context.Background(), map[string]any{"name": "waiting"})
+	l, err := c.CreateLabel(context.Background(), CreateLabelRequest{Name: "waiting"})
 	if err != nil {
 		t.Fatal(err)
 	}

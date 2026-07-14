@@ -121,21 +121,20 @@ func registerProjectTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_create_project",
 		Description: "Create a new Todoist project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateProjectInput) (*mcp.CallToolResult, CreateProjectOutput, error) {
-		body := map[string]any{"name": input.Name}
+		createReq := todoist.CreateProjectRequest{Name: input.Name}
 		if input.ParentID != "" {
-			body["parent_id"] = input.ParentID
+			createReq.ParentID = todoist.Ptr(input.ParentID)
 		}
 		if input.Color != "" {
-			body["color"] = input.Color
+			createReq.Color = todoist.Ptr(input.Color)
 		}
 		if input.IsFavorite {
-			body["is_favorite"] = true
+			createReq.IsFavorite = todoist.Ptr(true)
 		}
 		if input.ViewStyle != "" {
-			body["view_style"] = input.ViewStyle
+			createReq.ViewStyle = todoist.Ptr(input.ViewStyle)
 		}
-
-		p, err := c.CreateProject(ctx, body)
+		p, err := c.CreateProject(ctx, createReq)
 		if err != nil {
 			return nil, CreateProjectOutput{Success: false, Message: err.Error()}, err
 		}
@@ -148,18 +147,17 @@ func registerProjectTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_update_project",
 		Description: "Update an existing Todoist project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateProjectInput) (*mcp.CallToolResult, UpdateProjectOutput, error) {
-		body := map[string]any{}
+		updateReq := todoist.UpdateProjectRequest{}
 		if input.Name != "" {
-			body["name"] = input.Name
+			updateReq.Name = todoist.Ptr(input.Name)
 		}
 		if input.Color != "" {
-			body["color"] = input.Color
+			updateReq.Color = todoist.Ptr(input.Color)
 		}
 		if input.IsFavorite != nil {
-			body["is_favorite"] = *input.IsFavorite
+			updateReq.IsFavorite = input.IsFavorite
 		}
-
-		p, err := c.UpdateProject(ctx, input.ProjectID, body)
+		p, err := c.UpdateProject(ctx, input.ProjectID, updateReq)
 		if err != nil {
 			return nil, UpdateProjectOutput{Success: false, Message: err.Error()}, err
 		}

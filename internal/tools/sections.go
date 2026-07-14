@@ -71,15 +71,11 @@ func registerSectionTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_create_section",
 		Description: "Create a new section in a Todoist project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateSectionInput) (*mcp.CallToolResult, CreateSectionOutput, error) {
-		body := map[string]any{
-			"name":       input.Name,
-			"project_id": input.ProjectID,
-		}
+		createReq := todoist.CreateSectionRequest{Name: input.Name, ProjectID: input.ProjectID}
 		if input.Order > 0 {
-			body["section_order"] = input.Order
+			createReq.SectionOrder = todoist.Ptr(input.Order)
 		}
-
-		sec, err := c.CreateSection(ctx, body)
+		sec, err := c.CreateSection(ctx, createReq)
 		if err != nil {
 			return nil, CreateSectionOutput{Success: false, Message: err.Error()}, err
 		}
@@ -92,8 +88,7 @@ func registerSectionTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_update_section",
 		Description: "Update an existing section name",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateSectionInput) (*mcp.CallToolResult, UpdateSectionOutput, error) {
-		body := map[string]any{"name": input.Name}
-		sec, err := c.UpdateSection(ctx, input.SectionID, body)
+		sec, err := c.UpdateSection(ctx, input.SectionID, todoist.UpdateSectionRequest{Name: input.Name})
 		if err != nil {
 			return nil, UpdateSectionOutput{Success: false, Message: err.Error()}, err
 		}

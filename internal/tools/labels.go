@@ -74,15 +74,14 @@ func registerLabelTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_create_label",
 		Description: "Create a new personal label",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateLabelInput) (*mcp.CallToolResult, CreateLabelOutput, error) {
-		body := map[string]any{"name": input.Name}
+		createReq := todoist.CreateLabelRequest{Name: input.Name}
 		if input.Color != "" {
-			body["color"] = input.Color
+			createReq.Color = todoist.Ptr(input.Color)
 		}
 		if input.IsFavorite {
-			body["is_favorite"] = true
+			createReq.IsFavorite = todoist.Ptr(true)
 		}
-
-		l, err := c.CreateLabel(ctx, body)
+		l, err := c.CreateLabel(ctx, createReq)
 		if err != nil {
 			return nil, CreateLabelOutput{Success: false, Message: err.Error()}, err
 		}
@@ -95,15 +94,14 @@ func registerLabelTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_update_label",
 		Description: "Update an existing label",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateLabelInput) (*mcp.CallToolResult, UpdateLabelOutput, error) {
-		body := map[string]any{}
+		updateReq := todoist.UpdateLabelRequest{}
 		if input.Name != "" {
-			body["name"] = input.Name
+			updateReq.Name = todoist.Ptr(input.Name)
 		}
 		if input.Color != "" {
-			body["color"] = input.Color
+			updateReq.Color = todoist.Ptr(input.Color)
 		}
-
-		l, err := c.UpdateLabel(ctx, input.LabelID, body)
+		l, err := c.UpdateLabel(ctx, input.LabelID, updateReq)
 		if err != nil {
 			return nil, UpdateLabelOutput{Success: false, Message: err.Error()}, err
 		}

@@ -36,9 +36,25 @@ func (c *Client) GetProject(ctx context.Context, id string) (*models.Project, er
 	return &project, nil
 }
 
+// CreateProjectRequest is the request body for creating a project.
+type CreateProjectRequest struct {
+	Name       string  `json:"name"`
+	ParentID   *string `json:"parent_id,omitempty"`
+	Color      *string `json:"color,omitempty"`
+	IsFavorite *bool   `json:"is_favorite,omitempty"`
+	ViewStyle  *string `json:"view_style,omitempty"`
+}
+
+// UpdateProjectRequest is the request body for updating a project.
+type UpdateProjectRequest struct {
+	Name       *string `json:"name,omitempty"`
+	Color      *string `json:"color,omitempty"`
+	IsFavorite *bool   `json:"is_favorite,omitempty"`
+}
+
 // CreateProject creates a new project.
-func (c *Client) CreateProject(ctx context.Context, body map[string]any) (*models.Project, error) {
-	data, err := c.do(ctx, "POST", "/projects", body)
+func (c *Client) CreateProject(ctx context.Context, req CreateProjectRequest) (*models.Project, error) {
+	data, err := c.do(ctx, "POST", "/projects", req)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +67,8 @@ func (c *Client) CreateProject(ctx context.Context, body map[string]any) (*model
 }
 
 // UpdateProject updates an existing project.
-func (c *Client) UpdateProject(ctx context.Context, id string, body map[string]any) (*models.Project, error) {
-	data, err := c.do(ctx, "POST", "/projects/"+id, body)
+func (c *Client) UpdateProject(ctx context.Context, id string, req UpdateProjectRequest) (*models.Project, error) {
+	data, err := c.do(ctx, "POST", "/projects/"+id, req)
 	if err != nil {
 		return nil, err
 	}

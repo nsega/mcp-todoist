@@ -72,15 +72,14 @@ func registerCommentTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_create_comment",
 		Description: "Add a comment to a task or project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateCommentInput) (*mcp.CallToolResult, CreateCommentOutput, error) {
-		body := map[string]any{"content": input.Content}
+		createReq := todoist.CreateCommentRequest{Content: input.Content}
 		if input.TaskID != "" {
-			body["task_id"] = input.TaskID
+			createReq.TaskID = todoist.Ptr(input.TaskID)
 		}
 		if input.ProjectID != "" {
-			body["project_id"] = input.ProjectID
+			createReq.ProjectID = todoist.Ptr(input.ProjectID)
 		}
-
-		cm, err := c.CreateComment(ctx, body)
+		cm, err := c.CreateComment(ctx, createReq)
 		if err != nil {
 			return nil, CreateCommentOutput{Success: false, Message: err.Error()}, err
 		}
@@ -93,8 +92,7 @@ func registerCommentTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_update_comment",
 		Description: "Update an existing comment",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateCommentInput) (*mcp.CallToolResult, UpdateCommentOutput, error) {
-		body := map[string]any{"content": input.Content}
-		cm, err := c.UpdateComment(ctx, input.CommentID, body)
+		cm, err := c.UpdateComment(ctx, input.CommentID, todoist.UpdateCommentRequest{Content: input.Content})
 		if err != nil {
 			return nil, UpdateCommentOutput{Success: false, Message: err.Error()}, err
 		}
