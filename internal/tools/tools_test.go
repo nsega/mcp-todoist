@@ -2,6 +2,7 @@ package tools
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -505,5 +506,110 @@ func TestMoveTaskTool(t *testing.T) {
 	text := resultText(result)
 	if !strings.Contains(text, "Successfully moved") {
 		t.Errorf("unexpected result: %s", text)
+	}
+}
+
+func captureUpdateBody(t *testing.T, rt *router, bodies *[]map[string]any) {
+	t.Helper()
+	rt.handle("POST", "/tasks/", func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Errorf("decode body: %v", err)
+		}
+		*bodies = append(*bodies, body)
+		_, _ = w.Write([]byte(`{"id":"10","content":"Task"}`))
+	})
+}
+
+func TestUpdateTaskTool_ClearDescription(t *testing.T) {
+	rt := newRouter()
+	var bodies []map[string]any
+	captureUpdateBody(t, rt, &bodies)
+	cs, cleanup := setupTest(t, rt)
+	defer cleanup()
+
+	callTool(t, cs, "todoist_update_task", map[string]any{
+		"task_id":     "10",
+		"description": "",
+	})
+
+	if len(bodies) != 1 {
+		t.Fatalf("got %d update requests", len(bodies))
+	}
+	desc, ok := bodies[0]["description"]
+	if !ok {
+		t.Fatal("description key missing: empty string should clear, not be dropped")
+	}
+	if desc != "" {
+		t.Errorf("description = %v, want \"\"", desc)
+	}
+}
+
+func TestUpdateTaskTool_ClearDueDate(t *testing.T) {
+	for _, spelling := range []string{"", "no date"} {
+		rt := newRouter()
+		var bodies []map[string]any
+		captureUpdateBody(t, rt, &bodies)
+		cs, cleanup := setupTest(t, rt)
+
+		callTool(t, cs, "todoist_update_task", map[string]any{
+			"task_id":    "10",
+			"due_string": spelling,
+		})
+
+		if len(bodies) != 1 {
+			t.Fatalf("spelling %q: got %d update requests", spelling, len(bodies))
+		}
+		if got := bodies[0]["due_string"]; got != "no date" {
+			t.Errorf("spelling %q: due_string = %v, want \"no date\"", spelling, got)
+		}
+		cleanup()
+	}
+}
+
+func TestUpdateTaskTool_ClearLabels(t *testing.T) {
+	rt := newRouter()
+	var bodies []map[string]any
+	captureUpdateBody(t, rt, &bodies)
+	cs, cleanup := setupTest(t, rt)
+	defer cleanup()
+
+	callTool(t, cs, "todoist_update_task", map[string]any{
+		"task_id": "10",
+		"labels":  []string{},
+	})
+
+	if len(bodies) != 1 {
+		t.Fatalf("got %d update requests", len(bodies))
+	}
+	labels, ok := bodies[0]["labels"]
+	if !ok {
+		t.Fatal("labels key missing: empty array should clear, not be dropped")
+	}
+	arr, ok := labels.([]any)
+	if !ok || len(arr) != 0 {
+		t.Errorf("labels = %v, want []", labels)
+	}
+}
+
+func TestUpdateTaskTool_AbsentFieldsUntouched(t *testing.T) {
+	rt := newRouter()
+	var bodies []map[string]any
+	captureUpdateBody(t, rt, &bodies)
+	cs, cleanup := setupTest(t, rt)
+	defer cleanup()
+
+	callTool(t, cs, "todoist_update_task", map[string]any{
+		"task_id": "10",
+		"content": "Renamed",
+	})
+
+	if len(bodies) != 1 {
+		t.Fatalf("got %d update requests", len(bodies))
+	}
+	for _, key := range []string{"description", "due_string", "labels"} {
+		if _, ok := bodies[0][key]; ok {
+			t.Errorf("%s key present, want absent", key)
+		}
 	}
 }
