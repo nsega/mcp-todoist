@@ -13,51 +13,32 @@ type GetCommentsInput struct {
 	TaskID    string `json:"task_id,omitempty" jsonschema:"Get comments for a task (provide task_id or project_id)"`
 	ProjectID string `json:"project_id,omitempty" jsonschema:"Get comments for a project (provide task_id or project_id)"`
 }
-type GetCommentsOutput struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-}
-
 type CreateCommentInput struct {
 	Content   string `json:"content" jsonschema:"Comment text content"`
 	TaskID    string `json:"task_id,omitempty" jsonschema:"Task ID to comment on (provide task_id or project_id)"`
 	ProjectID string `json:"project_id,omitempty" jsonschema:"Project ID to comment on (provide task_id or project_id)"`
 }
-type CreateCommentOutput struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-}
-
 type UpdateCommentInput struct {
 	CommentID string `json:"comment_id" jsonschema:"The comment ID to update"`
 	Content   string `json:"content" jsonschema:"New comment text content"`
 }
-type UpdateCommentOutput struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-}
-
 type DeleteCommentInput struct {
 	CommentID string `json:"comment_id" jsonschema:"The comment ID to delete"`
-}
-type DeleteCommentOutput struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
 }
 
 func registerCommentTools(s *mcp.Server, c *todoist.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_get_comments",
 		Description: "List comments for a task or project",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, input GetCommentsInput) (*mcp.CallToolResult, GetCommentsOutput, error) {
+	}, func(ctx context.Context, req *mcp.CallToolRequest, input GetCommentsInput) (*mcp.CallToolResult, ActionOutput, error) {
 		comments, err := c.GetComments(ctx, input.TaskID, input.ProjectID)
 		if err != nil {
-			return nil, GetCommentsOutput{}, err
+			return nil, ActionOutput{}, err
 		}
 
 		if len(comments) == 0 {
 			msg := "No comments found"
-			return textResult(msg, false), GetCommentsOutput{Success: true, Message: msg}, nil
+			return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
 		}
 
 		var lines []string
@@ -65,13 +46,13 @@ func registerCommentTools(s *mcp.Server, c *todoist.Client) {
 			lines = append(lines, fmt.Sprintf("- [%s] %s (ID: %s)", cm.PostedAt.Format("2006-01-02 15:04"), cm.Content, cm.ID))
 		}
 		msg := strings.Join(lines, "\n")
-		return textResult(msg, false), GetCommentsOutput{Success: true, Message: msg}, nil
+		return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_create_comment",
 		Description: "Add a comment to a task or project",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateCommentInput) (*mcp.CallToolResult, CreateCommentOutput, error) {
+	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateCommentInput) (*mcp.CallToolResult, ActionOutput, error) {
 		createReq := todoist.CreateCommentRequest{Content: input.Content}
 		if input.TaskID != "" {
 			createReq.TaskID = new(input.TaskID)
@@ -81,34 +62,34 @@ func registerCommentTools(s *mcp.Server, c *todoist.Client) {
 		}
 		cm, err := c.CreateComment(ctx, createReq)
 		if err != nil {
-			return nil, CreateCommentOutput{Success: false, Message: err.Error()}, err
+			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
 
 		msg := fmt.Sprintf("Comment created (ID: %s): %s", cm.ID, cm.Content)
-		return textResult(msg, false), CreateCommentOutput{Success: true, Message: msg}, nil
+		return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_update_comment",
 		Description: "Update an existing comment",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateCommentInput) (*mcp.CallToolResult, UpdateCommentOutput, error) {
+	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateCommentInput) (*mcp.CallToolResult, ActionOutput, error) {
 		cm, err := c.UpdateComment(ctx, input.CommentID, todoist.UpdateCommentRequest{Content: input.Content})
 		if err != nil {
-			return nil, UpdateCommentOutput{Success: false, Message: err.Error()}, err
+			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
 
 		msg := fmt.Sprintf("Comment updated (ID: %s): %s", cm.ID, cm.Content)
-		return textResult(msg, false), UpdateCommentOutput{Success: true, Message: msg}, nil
+		return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_delete_comment",
 		Description: "Delete a comment",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, input DeleteCommentInput) (*mcp.CallToolResult, DeleteCommentOutput, error) {
+	}, func(ctx context.Context, req *mcp.CallToolRequest, input DeleteCommentInput) (*mcp.CallToolResult, ActionOutput, error) {
 		if err := c.DeleteComment(ctx, input.CommentID); err != nil {
-			return nil, DeleteCommentOutput{Success: false, Message: err.Error()}, err
+			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
 		msg := fmt.Sprintf("Successfully deleted comment: %s", input.CommentID)
-		return textResult(msg, false), DeleteCommentOutput{Success: true, Message: msg}, nil
+		return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
 	})
 }

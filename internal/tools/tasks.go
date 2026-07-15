@@ -24,21 +24,11 @@ type CreateTaskInput struct {
 	AssigneeID  string   `json:"assignee_id,omitempty" jsonschema:"User ID to assign the task to (optional)"`
 }
 
-type CreateTaskOutput struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-}
-
 type GetTasksInput struct {
 	ProjectID string `json:"project_id,omitempty" jsonschema:"Filter tasks by project ID (optional)"`
 	Filter    string `json:"filter,omitempty" jsonschema:"Natural language filter like 'today', 'tomorrow', 'next week', 'priority 1', 'overdue' (optional)"`
 	Priority  int    `json:"priority,omitempty" jsonschema:"Filter by priority level (1-4) (optional)"`
 	Limit     int    `json:"limit,omitempty" jsonschema:"Maximum number of tasks to return (optional, default 10)"`
-}
-
-type GetTasksOutput struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
 }
 
 type UpdateTaskInput struct {
@@ -53,19 +43,9 @@ type UpdateTaskInput struct {
 	DeadlineDate string   `json:"deadline_date,omitempty" jsonschema:"New deadline date in YYYY-MM-DD format (optional)"`
 }
 
-type UpdateTaskOutput struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-}
-
 type DeleteTaskInput struct {
 	TaskID   string `json:"task_id,omitempty" jsonschema:"Task ID to delete (preferred over task_name)"`
 	TaskName string `json:"task_name,omitempty" jsonschema:"Name/content of the task to search for and delete"`
-}
-
-type DeleteTaskOutput struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
 }
 
 type CompleteTaskInput struct {
@@ -73,19 +53,9 @@ type CompleteTaskInput struct {
 	TaskName string `json:"task_name,omitempty" jsonschema:"Name/content of the task to search for and complete"`
 }
 
-type CompleteTaskOutput struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-}
-
 type ReopenTaskInput struct {
 	TaskID   string `json:"task_id,omitempty" jsonschema:"Task ID to reopen (preferred over task_name)"`
 	TaskName string `json:"task_name,omitempty" jsonschema:"Name/content of the task to search for and reopen"`
-}
-
-type ReopenTaskOutput struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
 }
 
 // --- helpers ---
@@ -107,20 +77,13 @@ func resolveTaskID(ctx context.Context, c *todoist.Client, id, name string) (str
 	return task.ID, task.Content, nil
 }
 
-func textResult(msg string, isError bool) *mcp.CallToolResult {
-	return &mcp.CallToolResult{
-		Content: []mcp.Content{&mcp.TextContent{Text: msg}},
-		IsError: isError,
-	}
-}
-
 // --- registrations ---
 
 func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_create_task",
 		Description: "Create a new task in Todoist with optional description, due date, priority, project, section, labels, and assignee",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateTaskInput) (*mcp.CallToolResult, CreateTaskOutput, error) {
+	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateTaskInput) (*mcp.CallToolResult, ActionOutput, error) {
 		createReq := todoist.CreateTaskRequest{Content: input.Content}
 		if input.Description != "" {
 			createReq.Description = new(input.Description)
@@ -149,7 +112,7 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 
 		task, err := c.CreateTask(ctx, createReq)
 		if err != nil {
-			return nil, CreateTaskOutput{Success: false, Message: err.Error()}, err
+			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
 
 		msg := fmt.Sprintf("Task created:\nTitle: %s", task.Content)
@@ -163,13 +126,13 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 			msg += fmt.Sprintf("\nPriority: %d", task.Priority)
 		}
 
-		return textResult(msg, false), CreateTaskOutput{Success: true, Message: msg}, nil
+		return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_get_tasks",
 		Description: "Get a list of tasks from Todoist with various filters",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, input GetTasksInput) (*mcp.CallToolResult, GetTasksOutput, error) {
+	}, func(ctx context.Context, req *mcp.CallToolRequest, input GetTasksInput) (*mcp.CallToolResult, ActionOutput, error) {
 		var tasks []models.Task
 		var err error
 		if input.Filter != "" {
@@ -178,7 +141,7 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 			tasks, err = c.GetTasks(ctx, input.ProjectID)
 		}
 		if err != nil {
-			return nil, GetTasksOutput{}, err
+			return nil, ActionOutput{}, err
 		}
 
 		// Apply priority filter.
@@ -222,20 +185,20 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 			msg = strings.Join(lines, "\n\n")
 		}
 
-		return textResult(msg, false), GetTasksOutput{Success: true, Message: msg}, nil
+		return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_update_task",
 		Description: "Update an existing task in Todoist by task_id or by searching by name",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateTaskInput) (*mcp.CallToolResult, UpdateTaskOutput, error) {
+	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateTaskInput) (*mcp.CallToolResult, ActionOutput, error) {
 		id, originalName, err := resolveTaskID(ctx, c, input.TaskID, input.TaskName)
 		if err != nil {
-			return nil, UpdateTaskOutput{Success: false, Message: err.Error()}, err
+			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
 		if id == "" {
 			msg := fmt.Sprintf("Could not find a task matching \"%s\"", input.TaskName)
-			return textResult(msg, true), UpdateTaskOutput{Success: false, Message: msg}, nil
+			return textResult(msg, true), ActionOutput{Success: false, Message: msg}, nil
 		}
 
 		updateReq := todoist.UpdateTaskRequest{}
@@ -263,7 +226,7 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 
 		updated, err := c.UpdateTask(ctx, id, updateReq)
 		if err != nil {
-			return nil, UpdateTaskOutput{Success: false, Message: err.Error()}, err
+			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
 
 		label := originalName
@@ -281,24 +244,24 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 			msg += fmt.Sprintf("\nNew Priority: %d", updated.Priority)
 		}
 
-		return textResult(msg, false), UpdateTaskOutput{Success: true, Message: msg}, nil
+		return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_delete_task",
 		Description: "Delete a task from Todoist by task_id or by searching by name",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, input DeleteTaskInput) (*mcp.CallToolResult, DeleteTaskOutput, error) {
+	}, func(ctx context.Context, req *mcp.CallToolRequest, input DeleteTaskInput) (*mcp.CallToolResult, ActionOutput, error) {
 		id, originalName, err := resolveTaskID(ctx, c, input.TaskID, input.TaskName)
 		if err != nil {
-			return nil, DeleteTaskOutput{Success: false, Message: err.Error()}, err
+			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
 		if id == "" {
 			msg := fmt.Sprintf("Could not find a task matching \"%s\"", input.TaskName)
-			return textResult(msg, true), DeleteTaskOutput{Success: false, Message: msg}, nil
+			return textResult(msg, true), ActionOutput{Success: false, Message: msg}, nil
 		}
 
 		if err := c.DeleteTask(ctx, id); err != nil {
-			return nil, DeleteTaskOutput{Success: false, Message: err.Error()}, err
+			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
 
 		label := originalName
@@ -306,24 +269,24 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 			label = id
 		}
 		msg := fmt.Sprintf("Successfully deleted task: \"%s\"", label)
-		return textResult(msg, false), DeleteTaskOutput{Success: true, Message: msg}, nil
+		return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_complete_task",
 		Description: "Mark a task as complete by task_id or by searching by name",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, input CompleteTaskInput) (*mcp.CallToolResult, CompleteTaskOutput, error) {
+	}, func(ctx context.Context, req *mcp.CallToolRequest, input CompleteTaskInput) (*mcp.CallToolResult, ActionOutput, error) {
 		id, originalName, err := resolveTaskID(ctx, c, input.TaskID, input.TaskName)
 		if err != nil {
-			return nil, CompleteTaskOutput{Success: false, Message: err.Error()}, err
+			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
 		if id == "" {
 			msg := fmt.Sprintf("Could not find a task matching \"%s\"", input.TaskName)
-			return textResult(msg, true), CompleteTaskOutput{Success: false, Message: msg}, nil
+			return textResult(msg, true), ActionOutput{Success: false, Message: msg}, nil
 		}
 
 		if err := c.CloseTask(ctx, id); err != nil {
-			return nil, CompleteTaskOutput{Success: false, Message: err.Error()}, err
+			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
 
 		label := originalName
@@ -331,24 +294,24 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 			label = id
 		}
 		msg := fmt.Sprintf("Successfully completed task: \"%s\"", label)
-		return textResult(msg, false), CompleteTaskOutput{Success: true, Message: msg}, nil
+		return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_reopen_task",
 		Description: "Reopen a completed task by task_id or by searching by name",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, input ReopenTaskInput) (*mcp.CallToolResult, ReopenTaskOutput, error) {
+	}, func(ctx context.Context, req *mcp.CallToolRequest, input ReopenTaskInput) (*mcp.CallToolResult, ActionOutput, error) {
 		id, originalName, err := resolveTaskID(ctx, c, input.TaskID, input.TaskName)
 		if err != nil {
-			return nil, ReopenTaskOutput{Success: false, Message: err.Error()}, err
+			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
 		if id == "" {
 			msg := fmt.Sprintf("Could not find a task matching \"%s\"", input.TaskName)
-			return textResult(msg, true), ReopenTaskOutput{Success: false, Message: msg}, nil
+			return textResult(msg, true), ActionOutput{Success: false, Message: msg}, nil
 		}
 
 		if err := c.ReopenTask(ctx, id); err != nil {
-			return nil, ReopenTaskOutput{Success: false, Message: err.Error()}, err
+			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
 
 		label := originalName
@@ -356,6 +319,6 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 			label = id
 		}
 		msg := fmt.Sprintf("Successfully reopened task: \"%s\"", label)
-		return textResult(msg, false), ReopenTaskOutput{Success: true, Message: msg}, nil
+		return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
 	})
 }

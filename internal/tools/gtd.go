@@ -14,18 +14,10 @@ import (
 // --- Inbox Review ---
 
 type InboxReviewInput struct{}
-type InboxReviewOutput struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-}
 
 // --- Weekly Review ---
 
 type WeeklyReviewInput struct{}
-type WeeklyReviewOutput struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-}
 
 // --- Move Task ---
 
@@ -35,10 +27,6 @@ type MoveTaskInput struct {
 	ProjectID string `json:"project_id,omitempty" jsonschema:"Destination project ID. Set exactly one of project_id, section_id, parent_id."`
 	SectionID string `json:"section_id,omitempty" jsonschema:"Destination section ID. Set exactly one of project_id, section_id, parent_id."`
 	ParentID  string `json:"parent_id,omitempty" jsonschema:"Destination parent task ID. Set exactly one of project_id, section_id, parent_id."`
-}
-type MoveTaskOutput struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
 }
 
 // --- Bulk Create Tasks ---
@@ -56,21 +44,17 @@ type BulkTaskItem struct {
 type BulkCreateTasksInput struct {
 	Tasks []BulkTaskItem `json:"tasks" jsonschema:"Array of tasks to create"`
 }
-type BulkCreateTasksOutput struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-}
 
 func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 	// --- todoist_inbox_review ---
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_inbox_review",
 		Description: "Get all inbox tasks grouped by age (today, this week, older) for GTD inbox processing",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, input InboxReviewInput) (*mcp.CallToolResult, InboxReviewOutput, error) {
+	}, func(ctx context.Context, req *mcp.CallToolRequest, input InboxReviewInput) (*mcp.CallToolResult, ActionOutput, error) {
 		// Find inbox project.
 		projects, err := c.GetProjects(ctx)
 		if err != nil {
-			return nil, InboxReviewOutput{}, err
+			return nil, ActionOutput{}, err
 		}
 
 		var inboxID string
@@ -82,17 +66,17 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		}
 		if inboxID == "" {
 			msg := "Could not find inbox project"
-			return textResult(msg, true), InboxReviewOutput{Success: false, Message: msg}, nil
+			return textResult(msg, true), ActionOutput{Success: false, Message: msg}, nil
 		}
 
 		tasks, err := c.GetTasks(ctx, inboxID)
 		if err != nil {
-			return nil, InboxReviewOutput{}, err
+			return nil, ActionOutput{}, err
 		}
 
 		if len(tasks) == 0 {
 			msg := "Inbox is empty! Nothing to process."
-			return textResult(msg, false), InboxReviewOutput{Success: true, Message: msg}, nil
+			return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
 		}
 
 		now := time.Now()
@@ -134,22 +118,22 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		writeGroup("Older", olderTasks)
 
 		msg := sb.String()
-		return textResult(msg, false), InboxReviewOutput{Success: true, Message: msg}, nil
+		return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
 	})
 
 	// --- todoist_weekly_review ---
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_weekly_review",
 		Description: "Comprehensive weekly review: projects with task counts, overdue tasks, tasks with no due date",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, input WeeklyReviewInput) (*mcp.CallToolResult, WeeklyReviewOutput, error) {
+	}, func(ctx context.Context, req *mcp.CallToolRequest, input WeeklyReviewInput) (*mcp.CallToolResult, ActionOutput, error) {
 		projects, err := c.GetProjects(ctx)
 		if err != nil {
-			return nil, WeeklyReviewOutput{}, err
+			return nil, ActionOutput{}, err
 		}
 
 		allTasks, err := c.GetTasks(ctx, "")
 		if err != nil {
-			return nil, WeeklyReviewOutput{}, err
+			return nil, ActionOutput{}, err
 		}
 
 		// Count tasks per project.
@@ -205,21 +189,21 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		}
 
 		msg := sb.String()
-		return textResult(msg, false), WeeklyReviewOutput{Success: true, Message: msg}, nil
+		return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
 	})
 
 	// --- todoist_move_task ---
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_move_task",
 		Description: "Move a task to a different project, section, or parent. Set exactly one of project_id, section_id, parent_id.",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, input MoveTaskInput) (*mcp.CallToolResult, MoveTaskOutput, error) {
+	}, func(ctx context.Context, req *mcp.CallToolRequest, input MoveTaskInput) (*mcp.CallToolResult, ActionOutput, error) {
 		id, originalName, err := resolveTaskID(ctx, c, input.TaskID, input.TaskName)
 		if err != nil {
-			return nil, MoveTaskOutput{Success: false, Message: err.Error()}, err
+			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
 		if id == "" {
 			msg := fmt.Sprintf("Could not find a task matching \"%s\"", input.TaskName)
-			return textResult(msg, true), MoveTaskOutput{Success: false, Message: msg}, nil
+			return textResult(msg, true), ActionOutput{Success: false, Message: msg}, nil
 		}
 
 		moveReq := todoist.MoveTaskRequest{}
@@ -238,12 +222,12 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		}
 		if dests != 1 {
 			msg := "exactly one of project_id, section_id, parent_id must be set"
-			return textResult(msg, true), MoveTaskOutput{Success: false, Message: msg}, nil
+			return textResult(msg, true), ActionOutput{Success: false, Message: msg}, nil
 		}
 
 		_, err = c.MoveTask(ctx, id, moveReq)
 		if err != nil {
-			return nil, MoveTaskOutput{Success: false, Message: err.Error()}, err
+			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
 
 		label := originalName
@@ -259,14 +243,14 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		case input.ParentID != "":
 			msg += fmt.Sprintf(" under parent %s", input.ParentID)
 		}
-		return textResult(msg, false), MoveTaskOutput{Success: true, Message: msg}, nil
+		return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
 	})
 
 	// --- todoist_bulk_create_tasks ---
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_bulk_create_tasks",
 		Description: "Create multiple tasks at once. Useful for batch processing from knowledge capture or project planning",
-	}, func(ctx context.Context, req *mcp.CallToolRequest, input BulkCreateTasksInput) (*mcp.CallToolResult, BulkCreateTasksOutput, error) {
+	}, func(ctx context.Context, req *mcp.CallToolRequest, input BulkCreateTasksInput) (*mcp.CallToolResult, ActionOutput, error) {
 		var created, failed int
 		var lines []string
 
@@ -303,6 +287,6 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 
 		msg := fmt.Sprintf("Bulk create: %d created, %d failed\n\n%s", created, failed, strings.Join(lines, "\n"))
 		success := failed == 0
-		return textResult(msg, !success), BulkCreateTasksOutput{Success: success, Message: msg}, nil
+		return textResult(msg, !success), ActionOutput{Success: success, Message: msg}, nil
 	})
 }
