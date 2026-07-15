@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.3",
+  "checkpoint_id": "8961e8dc2e32",
+  "strategy": "manual-commit",
+  "branch": "refactor/stage-3-handler-dedup",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/89/61e8dc2e32/0/metadata.json",
+      "transcript": "/89/61e8dc2e32/0/full.jsonl",
+      "content_hash": "/89/61e8dc2e32/0/content_hash.txt",
+      "prompt": "/89/61e8dc2e32/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 146,
+    "cache_creation_tokens": 901930,
+    "cache_read_tokens": 13797802,
+    "output_tokens": 92838,
+    "api_call_count": 76
+  }
+}
