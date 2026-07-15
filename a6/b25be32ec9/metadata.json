@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.3",
+  "checkpoint_id": "a6b25be32ec9",
+  "strategy": "manual-commit",
+  "branch": "feat/idempotent-post-retries",
+  "checkpoints_count": 2,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/a6/b25be32ec9/0/metadata.json",
+      "transcript": "/a6/b25be32ec9/0/full.jsonl",
+      "content_hash": "/a6/b25be32ec9/0/content_hash.txt",
+      "prompt": "/a6/b25be32ec9/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 214,
+    "cache_creation_tokens": 1337885,
+    "cache_read_tokens": 26445517,
+    "output_tokens": 118053,
+    "api_call_count": 111
+  }
+}
