@@ -163,6 +163,73 @@ func TestDoContextCanceledDuringBackoff(t *testing.T) {
 	}
 }
 
+func TestDoSendsRequestIDOnPost(t *testing.T) {
+	var reqID string
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		reqID = r.Header.Get("X-Request-Id")
+		_, _ = w.Write([]byte(`{}`))
+	})
+	defer srv.Close()
+
+	if _, err := c.do(context.Background(), "POST", "/test", map[string]string{"key": "val"}); err != nil {
+		t.Fatal(err)
+	}
+	if reqID == "" {
+		t.Fatal("X-Request-Id header missing on POST")
+	}
+	if len(reqID) != 36 || strings.Count(reqID, "-") != 4 {
+		t.Errorf("X-Request-Id = %q, want UUID format", reqID)
+	}
+}
+
+func TestDoRequestIDStableAcrossRetries(t *testing.T) {
+	var ids []string
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		ids = append(ids, r.Header.Get("X-Request-Id"))
+		if len(ids) == 1 {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		_, _ = w.Write([]byte(`{}`))
+	})
+	defer srv.Close()
+	c.retryBackoff = []time.Duration{0, 0}
+
+	if _, err := c.do(context.Background(), "POST", "/test", map[string]string{"key": "val"}); err != nil {
+		t.Fatal(err)
+	}
+	if len(ids) != 2 {
+		t.Fatalf("calls = %d, want 2", len(ids))
+	}
+	if ids[0] == "" {
+		t.Fatal("X-Request-Id header missing on first attempt")
+	}
+	if ids[0] != ids[1] {
+		t.Errorf("X-Request-Id changed across retries: %q then %q, want identical", ids[0], ids[1])
+	}
+}
+
+func TestDoNoRequestIDOnGet(t *testing.T) {
+	var reqID string
+	got := false
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		reqID = r.Header.Get("X-Request-Id")
+		got = true
+		_, _ = w.Write([]byte(`{}`))
+	})
+	defer srv.Close()
+
+	if _, err := c.do(context.Background(), "GET", "/test", nil); err != nil {
+		t.Fatal(err)
+	}
+	if !got {
+		t.Fatal("request never reached server")
+	}
+	if reqID != "" {
+		t.Errorf("X-Request-Id = %q on GET, want empty (idempotency header is POST-only)", reqID)
+	}
+}
+
 func TestParseRetryAfter(t *testing.T) {
 	cases := []struct {
 		in   string
