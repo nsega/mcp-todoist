@@ -2,9 +2,12 @@ package todoist
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
 )
 
 func testServer(t *testing.T, handler http.HandlerFunc) (*Client, *httptest.Server) {
@@ -78,5 +81,105 @@ func TestDo_sendsJSONBody(t *testing.T) {
 	_, err := c.do(context.Background(), "POST", "/test", map[string]string{"key": "val"})
 	if err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestDoRetriesOn429(t *testing.T) {
+	var calls int
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		if calls == 1 {
+			w.Header().Set("Retry-After", "0")
+			w.WriteHeader(http.StatusTooManyRequests)
+			return
+		}
+		_, _ = w.Write([]byte(`{"results":[],"next_cursor":""}`))
+	})
+	defer srv.Close()
+
+	if _, err := c.GetTasks(context.Background(), ""); err != nil {
+		t.Fatalf("expected success after retry, got %v", err)
+	}
+	if calls != 2 {
+		t.Errorf("calls = %d, want 2", calls)
+	}
+}
+
+func TestDoFailsAfterMaxAttemptsOn500(t *testing.T) {
+	var calls int
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		w.WriteHeader(http.StatusInternalServerError)
+	})
+	defer srv.Close()
+	c.retryBackoff = []time.Duration{0, 0}
+
+	_, err := c.GetTasks(context.Background(), "")
+	if err == nil {
+		t.Fatal("expected error after exhausting retries")
+	}
+	if !strings.Contains(err.Error(), "status 500") {
+		t.Errorf("err = %v, want status 500 mention", err)
+	}
+	if calls != maxAttempts {
+		t.Errorf("calls = %d, want %d", calls, maxAttempts)
+	}
+}
+
+func TestDoNoRetryOn4xx(t *testing.T) {
+	var calls int
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		w.WriteHeader(http.StatusBadRequest)
+	})
+	defer srv.Close()
+
+	if _, err := c.GetTasks(context.Background(), ""); err == nil {
+		t.Fatal("expected error")
+	}
+	if calls != 1 {
+		t.Errorf("calls = %d, want 1", calls)
+	}
+}
+
+func TestDoContextCanceledDuringBackoff(t *testing.T) {
+	var calls int
+	c, srv := testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		w.WriteHeader(http.StatusInternalServerError)
+	})
+	defer srv.Close()
+	// default backoff (250ms) is longer than the deadline
+
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+
+	_, err := c.GetTasks(ctx, "")
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("err = %v, want context.DeadlineExceeded", err)
+	}
+	if calls != 1 {
+		t.Errorf("calls = %d, want 1 (canceled during first backoff)", calls)
+	}
+}
+
+func TestParseRetryAfter(t *testing.T) {
+	cases := []struct {
+		in   string
+		want time.Duration
+		ok   bool
+	}{
+		{"0", 0, true},
+		{"2", 2 * time.Second, true},
+		{"60", maxRetryAfter, true}, // capped at 30s
+		{"", 0, false},
+		{"garbage", 0, false},
+		{"-1", 0, false},
+	}
+	for _, tc := range cases {
+		got, ok := parseRetryAfter(tc.in)
+		if got != tc.want || ok != tc.ok {
+			t.Errorf("parseRetryAfter(%q) = (%v, %v), want (%v, %v)", tc.in, got, ok, tc.want, tc.ok)
+		}
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestGetTasks(t *testing.T) {
@@ -349,6 +350,7 @@ func TestGetTasksByFilter_apiErrorOnSecondPage(t *testing.T) {
 		}
 	})
 	defer srv.Close()
+	c.retryBackoff = []time.Duration{0, 0} // avoid slow test due to 500 retries
 
 	_, err := c.GetTasksByFilter(context.Background(), "today")
 	if err == nil {
@@ -592,6 +594,7 @@ func TestFindTaskByName_apiErrorOnSecondPage(t *testing.T) {
 		}
 	})
 	defer srv.Close()
+	c.retryBackoff = []time.Duration{0, 0} // avoid slow test due to 500 retries
 
 	_, err := c.FindTaskByName(context.Background(), "Target task")
 	if err == nil {
