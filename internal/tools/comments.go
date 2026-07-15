@@ -50,7 +50,7 @@ func registerCommentTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_get_comments",
 		Description: "List comments for a task or project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input GetCommentsInput) (*mcp.CallToolResult, GetCommentsOutput, error) {
-		comments, err := c.GetComments(input.TaskID, input.ProjectID)
+		comments, err := c.GetComments(ctx, input.TaskID, input.ProjectID)
 		if err != nil {
 			return nil, GetCommentsOutput{}, err
 		}
@@ -72,15 +72,14 @@ func registerCommentTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_create_comment",
 		Description: "Add a comment to a task or project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateCommentInput) (*mcp.CallToolResult, CreateCommentOutput, error) {
-		body := map[string]any{"content": input.Content}
+		createReq := todoist.CreateCommentRequest{Content: input.Content}
 		if input.TaskID != "" {
-			body["task_id"] = input.TaskID
+			createReq.TaskID = new(input.TaskID)
 		}
 		if input.ProjectID != "" {
-			body["project_id"] = input.ProjectID
+			createReq.ProjectID = new(input.ProjectID)
 		}
-
-		cm, err := c.CreateComment(body)
+		cm, err := c.CreateComment(ctx, createReq)
 		if err != nil {
 			return nil, CreateCommentOutput{Success: false, Message: err.Error()}, err
 		}
@@ -93,8 +92,7 @@ func registerCommentTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_update_comment",
 		Description: "Update an existing comment",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateCommentInput) (*mcp.CallToolResult, UpdateCommentOutput, error) {
-		body := map[string]any{"content": input.Content}
-		cm, err := c.UpdateComment(input.CommentID, body)
+		cm, err := c.UpdateComment(ctx, input.CommentID, todoist.UpdateCommentRequest{Content: input.Content})
 		if err != nil {
 			return nil, UpdateCommentOutput{Success: false, Message: err.Error()}, err
 		}
@@ -107,7 +105,7 @@ func registerCommentTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_delete_comment",
 		Description: "Delete a comment",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input DeleteCommentInput) (*mcp.CallToolResult, DeleteCommentOutput, error) {
-		if err := c.DeleteComment(input.CommentID); err != nil {
+		if err := c.DeleteComment(ctx, input.CommentID); err != nil {
 			return nil, DeleteCommentOutput{Success: false, Message: err.Error()}, err
 		}
 		msg := fmt.Sprintf("Successfully deleted comment: %s", input.CommentID)

@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -9,7 +10,7 @@ import (
 )
 
 // GetSections returns sections, optionally filtered by project.
-func (c *Client) GetSections(projectID string) ([]models.Section, error) {
+func (c *Client) GetSections(ctx context.Context, projectID string) ([]models.Section, error) {
 	endpoint := "/sections"
 	if projectID != "" {
 		values := url.Values{}
@@ -17,7 +18,7 @@ func (c *Client) GetSections(projectID string) ([]models.Section, error) {
 		endpoint += "?" + values.Encode()
 	}
 
-	data, err := c.do("GET", endpoint, nil)
+	data, err := c.do(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -29,9 +30,21 @@ func (c *Client) GetSections(projectID string) ([]models.Section, error) {
 	return page.Results, nil
 }
 
+// CreateSectionRequest is the request body for creating a section.
+type CreateSectionRequest struct {
+	Name         string `json:"name"`
+	ProjectID    string `json:"project_id"`
+	SectionOrder *int   `json:"section_order,omitempty"`
+}
+
+// UpdateSectionRequest is the request body for updating a section.
+type UpdateSectionRequest struct {
+	Name string `json:"name"`
+}
+
 // CreateSection creates a new section.
-func (c *Client) CreateSection(body map[string]any) (*models.Section, error) {
-	data, err := c.do("POST", "/sections", body)
+func (c *Client) CreateSection(ctx context.Context, req CreateSectionRequest) (*models.Section, error) {
+	data, err := c.do(ctx, "POST", "/sections", req)
 	if err != nil {
 		return nil, err
 	}
@@ -44,8 +57,8 @@ func (c *Client) CreateSection(body map[string]any) (*models.Section, error) {
 }
 
 // UpdateSection updates an existing section.
-func (c *Client) UpdateSection(id string, body map[string]any) (*models.Section, error) {
-	data, err := c.do("POST", "/sections/"+id, body)
+func (c *Client) UpdateSection(ctx context.Context, id string, req UpdateSectionRequest) (*models.Section, error) {
+	data, err := c.do(ctx, "POST", "/sections/"+id, req)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +71,7 @@ func (c *Client) UpdateSection(id string, body map[string]any) (*models.Section,
 }
 
 // DeleteSection deletes a section.
-func (c *Client) DeleteSection(id string) error {
-	_, err := c.do("DELETE", "/sections/"+id, nil)
+func (c *Client) DeleteSection(ctx context.Context, id string) error {
+	_, err := c.do(ctx, "DELETE", "/sections/"+id, nil)
 	return err
 }

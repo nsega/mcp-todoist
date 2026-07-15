@@ -75,7 +75,7 @@ func registerProjectTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_get_projects",
 		Description: "List all Todoist projects",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input GetProjectsInput) (*mcp.CallToolResult, GetProjectsOutput, error) {
-		projects, err := c.GetProjects()
+		projects, err := c.GetProjects(ctx)
 		if err != nil {
 			return nil, GetProjectsOutput{}, err
 		}
@@ -104,7 +104,7 @@ func registerProjectTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_get_project",
 		Description: "Get a single Todoist project by ID",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input GetProjectInput) (*mcp.CallToolResult, GetProjectOutput, error) {
-		p, err := c.GetProject(input.ProjectID)
+		p, err := c.GetProject(ctx, input.ProjectID)
 		if err != nil {
 			return nil, GetProjectOutput{}, err
 		}
@@ -121,21 +121,20 @@ func registerProjectTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_create_project",
 		Description: "Create a new Todoist project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateProjectInput) (*mcp.CallToolResult, CreateProjectOutput, error) {
-		body := map[string]any{"name": input.Name}
+		createReq := todoist.CreateProjectRequest{Name: input.Name}
 		if input.ParentID != "" {
-			body["parent_id"] = input.ParentID
+			createReq.ParentID = new(input.ParentID)
 		}
 		if input.Color != "" {
-			body["color"] = input.Color
+			createReq.Color = new(input.Color)
 		}
 		if input.IsFavorite {
-			body["is_favorite"] = true
+			createReq.IsFavorite = new(true)
 		}
 		if input.ViewStyle != "" {
-			body["view_style"] = input.ViewStyle
+			createReq.ViewStyle = new(input.ViewStyle)
 		}
-
-		p, err := c.CreateProject(body)
+		p, err := c.CreateProject(ctx, createReq)
 		if err != nil {
 			return nil, CreateProjectOutput{Success: false, Message: err.Error()}, err
 		}
@@ -148,18 +147,17 @@ func registerProjectTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_update_project",
 		Description: "Update an existing Todoist project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateProjectInput) (*mcp.CallToolResult, UpdateProjectOutput, error) {
-		body := map[string]any{}
+		updateReq := todoist.UpdateProjectRequest{}
 		if input.Name != "" {
-			body["name"] = input.Name
+			updateReq.Name = new(input.Name)
 		}
 		if input.Color != "" {
-			body["color"] = input.Color
+			updateReq.Color = new(input.Color)
 		}
 		if input.IsFavorite != nil {
-			body["is_favorite"] = *input.IsFavorite
+			updateReq.IsFavorite = input.IsFavorite
 		}
-
-		p, err := c.UpdateProject(input.ProjectID, body)
+		p, err := c.UpdateProject(ctx, input.ProjectID, updateReq)
 		if err != nil {
 			return nil, UpdateProjectOutput{Success: false, Message: err.Error()}, err
 		}
@@ -172,7 +170,7 @@ func registerProjectTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_delete_project",
 		Description: "Delete a Todoist project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input DeleteProjectInput) (*mcp.CallToolResult, DeleteProjectOutput, error) {
-		if err := c.DeleteProject(input.ProjectID); err != nil {
+		if err := c.DeleteProject(ctx, input.ProjectID); err != nil {
 			return nil, DeleteProjectOutput{Success: false, Message: err.Error()}, err
 		}
 		msg := fmt.Sprintf("Successfully deleted project: %s", input.ProjectID)
@@ -183,7 +181,7 @@ func registerProjectTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_archive_project",
 		Description: "Archive a Todoist project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input ArchiveProjectInput) (*mcp.CallToolResult, ArchiveProjectOutput, error) {
-		if err := c.ArchiveProject(input.ProjectID); err != nil {
+		if err := c.ArchiveProject(ctx, input.ProjectID); err != nil {
 			return nil, ArchiveProjectOutput{Success: false, Message: err.Error()}, err
 		}
 		msg := fmt.Sprintf("Successfully archived project: %s", input.ProjectID)
@@ -194,7 +192,7 @@ func registerProjectTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_unarchive_project",
 		Description: "Unarchive a Todoist project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input UnarchiveProjectInput) (*mcp.CallToolResult, UnarchiveProjectOutput, error) {
-		if err := c.UnarchiveProject(input.ProjectID); err != nil {
+		if err := c.UnarchiveProject(ctx, input.ProjectID); err != nil {
 			return nil, UnarchiveProjectOutput{Success: false, Message: err.Error()}, err
 		}
 		msg := fmt.Sprintf("Successfully unarchived project: %s", input.ProjectID)

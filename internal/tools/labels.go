@@ -48,7 +48,7 @@ func registerLabelTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_get_labels",
 		Description: "List all personal labels",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input GetLabelsInput) (*mcp.CallToolResult, GetLabelsOutput, error) {
-		labels, err := c.GetLabels()
+		labels, err := c.GetLabels(ctx)
 		if err != nil {
 			return nil, GetLabelsOutput{}, err
 		}
@@ -74,15 +74,14 @@ func registerLabelTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_create_label",
 		Description: "Create a new personal label",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateLabelInput) (*mcp.CallToolResult, CreateLabelOutput, error) {
-		body := map[string]any{"name": input.Name}
+		createReq := todoist.CreateLabelRequest{Name: input.Name}
 		if input.Color != "" {
-			body["color"] = input.Color
+			createReq.Color = new(input.Color)
 		}
 		if input.IsFavorite {
-			body["is_favorite"] = true
+			createReq.IsFavorite = new(true)
 		}
-
-		l, err := c.CreateLabel(body)
+		l, err := c.CreateLabel(ctx, createReq)
 		if err != nil {
 			return nil, CreateLabelOutput{Success: false, Message: err.Error()}, err
 		}
@@ -95,15 +94,14 @@ func registerLabelTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_update_label",
 		Description: "Update an existing label",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateLabelInput) (*mcp.CallToolResult, UpdateLabelOutput, error) {
-		body := map[string]any{}
+		updateReq := todoist.UpdateLabelRequest{}
 		if input.Name != "" {
-			body["name"] = input.Name
+			updateReq.Name = new(input.Name)
 		}
 		if input.Color != "" {
-			body["color"] = input.Color
+			updateReq.Color = new(input.Color)
 		}
-
-		l, err := c.UpdateLabel(input.LabelID, body)
+		l, err := c.UpdateLabel(ctx, input.LabelID, updateReq)
 		if err != nil {
 			return nil, UpdateLabelOutput{Success: false, Message: err.Error()}, err
 		}
@@ -116,7 +114,7 @@ func registerLabelTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_delete_label",
 		Description: "Delete a label",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input DeleteLabelInput) (*mcp.CallToolResult, DeleteLabelOutput, error) {
-		if err := c.DeleteLabel(input.LabelID); err != nil {
+		if err := c.DeleteLabel(ctx, input.LabelID); err != nil {
 			return nil, DeleteLabelOutput{Success: false, Message: err.Error()}, err
 		}
 		msg := fmt.Sprintf("Successfully deleted label: %s", input.LabelID)

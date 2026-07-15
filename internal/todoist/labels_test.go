@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"net/http"
 	"testing"
 )
@@ -14,7 +15,7 @@ func TestGetLabels(t *testing.T) {
 	})
 	defer srv.Close()
 
-	labels, err := c.GetLabels()
+	labels, err := c.GetLabels(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,7 +33,7 @@ func TestCreateLabel(t *testing.T) {
 	})
 	defer srv.Close()
 
-	l, err := c.CreateLabel(map[string]any{"name": "waiting"})
+	l, err := c.CreateLabel(context.Background(), CreateLabelRequest{Name: "waiting"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,7 +51,7 @@ func TestDeleteLabel(t *testing.T) {
 	})
 	defer srv.Close()
 
-	if err := c.DeleteLabel("l1"); err != nil {
+	if err := c.DeleteLabel(context.Background(), "l1"); err != nil {
 		t.Fatal(err)
 	}
 }

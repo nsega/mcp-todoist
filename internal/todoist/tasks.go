@@ -1,6 +1,7 @@
 package todoist
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -29,7 +30,7 @@ func (r *filteredTasksResponse) tasks() []models.Task {
 }
 
 // getTasksPage returns one page of active tasks plus the cursor for the next page.
-func (c *Client) getTasksPage(projectID, cursor string) ([]models.Task, string, error) {
+func (c *Client) getTasksPage(ctx context.Context, projectID, cursor string) ([]models.Task, string, error) {
 	endpoint := "/tasks"
 	values := url.Values{}
 	if projectID != "" {
@@ -42,7 +43,7 @@ func (c *Client) getTasksPage(projectID, cursor string) ([]models.Task, string, 
 		endpoint += "?" + values.Encode()
 	}
 
-	data, err := c.do("GET", endpoint, nil)
+	data, err := c.do(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return nil, "", err
 	}
@@ -55,13 +56,13 @@ func (c *Client) getTasksPage(projectID, cursor string) ([]models.Task, string, 
 }
 
 // GetTasks returns the first page of active tasks, optionally filtered by project.
-func (c *Client) GetTasks(projectID string) ([]models.Task, error) {
-	tasks, _, err := c.getTasksPage(projectID, "")
+func (c *Client) GetTasks(ctx context.Context, projectID string) ([]models.Task, error) {
+	tasks, _, err := c.getTasksPage(ctx, projectID, "")
 	return tasks, err
 }
 
 // getFilteredTasksPage returns one page of filtered tasks plus the cursor for the next page.
-func (c *Client) getFilteredTasksPage(query, cursor string) ([]models.Task, string, error) {
+func (c *Client) getFilteredTasksPage(ctx context.Context, query, cursor string) ([]models.Task, string, error) {
 	values := url.Values{}
 	values.Set("query", query)
 	if cursor != "" {
@@ -71,7 +72,7 @@ func (c *Client) getFilteredTasksPage(query, cursor string) ([]models.Task, stri
 
 	slog.Debug("todoist filter request", "endpoint", endpoint)
 
-	data, err := c.do("GET", endpoint, nil)
+	data, err := c.do(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return nil, "", err
 	}
@@ -87,11 +88,11 @@ func (c *Client) getFilteredTasksPage(query, cursor string) ([]models.Task, stri
 
 // GetTasksByFilter returns tasks matching a Todoist filter query using the
 // dedicated /tasks/filter endpoint. It paginates up to maxFindPages pages.
-func (c *Client) GetTasksByFilter(query string) ([]models.Task, error) {
+func (c *Client) GetTasksByFilter(ctx context.Context, query string) ([]models.Task, error) {
 	var all []models.Task
 	cursor := ""
 	for range maxFindPages {
-		tasks, nextCursor, err := c.getFilteredTasksPage(query, cursor)
+		tasks, nextCursor, err := c.getFilteredTasksPage(ctx, query, cursor)
 		if err != nil {
 			return nil, err
 		}
@@ -105,8 +106,8 @@ func (c *Client) GetTasksByFilter(query string) ([]models.Task, error) {
 }
 
 // GetTask returns a single task by ID.
-func (c *Client) GetTask(id string) (*models.Task, error) {
-	data, err := c.do("GET", "/tasks/"+id, nil)
+func (c *Client) GetTask(ctx context.Context, id string) (*models.Task, error) {
+	data, err := c.do(ctx, "GET", "/tasks/"+id, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -118,9 +119,43 @@ func (c *Client) GetTask(id string) (*models.Task, error) {
 	return &task, nil
 }
 
+// CreateTaskRequest is the request body for creating a task.
+type CreateTaskRequest struct {
+	Content     string   `json:"content"`
+	Description *string  `json:"description,omitempty"`
+	DueString   *string  `json:"due_string,omitempty"`
+	Priority    *int     `json:"priority,omitempty"`
+	ProjectID   *string  `json:"project_id,omitempty"`
+	SectionID   *string  `json:"section_id,omitempty"`
+	ParentID    *string  `json:"parent_id,omitempty"`
+	Labels      []string `json:"labels,omitempty"`
+	AssigneeID  *string  `json:"assignee_id,omitempty"`
+}
+
+// UpdateTaskRequest is the request body for updating a task.
+//
+// Labels is *[]string so a pointer to an empty slice can express
+// "clear all labels"; omitempty on a plain slice would drop it.
+type UpdateTaskRequest struct {
+	Content      *string   `json:"content,omitempty"`
+	Description  *string   `json:"description,omitempty"`
+	DueString    *string   `json:"due_string,omitempty"`
+	Priority     *int      `json:"priority,omitempty"`
+	Labels       *[]string `json:"labels,omitempty"`
+	AssigneeID   *string   `json:"assignee_id,omitempty"`
+	DeadlineDate *string   `json:"deadline_date,omitempty"`
+}
+
+// MoveTaskRequest moves a task. Set exactly one field.
+type MoveTaskRequest struct {
+	ProjectID *string `json:"project_id,omitempty"`
+	SectionID *string `json:"section_id,omitempty"`
+	ParentID  *string `json:"parent_id,omitempty"`
+}
+
 // CreateTask creates a new task.
-func (c *Client) CreateTask(body map[string]any) (*models.Task, error) {
-	data, err := c.do("POST", "/tasks", body)
+func (c *Client) CreateTask(ctx context.Context, req CreateTaskRequest) (*models.Task, error) {
+	data, err := c.do(ctx, "POST", "/tasks", req)
 	if err != nil {
 		return nil, err
 	}
@@ -133,8 +168,8 @@ func (c *Client) CreateTask(body map[string]any) (*models.Task, error) {
 }
 
 // UpdateTask updates an existing task.
-func (c *Client) UpdateTask(id string, body map[string]any) (*models.Task, error) {
-	data, err := c.do("POST", "/tasks/"+id, body)
+func (c *Client) UpdateTask(ctx context.Context, id string, req UpdateTaskRequest) (*models.Task, error) {
+	data, err := c.do(ctx, "POST", "/tasks/"+id, req)
 	if err != nil {
 		return nil, err
 	}
@@ -147,9 +182,9 @@ func (c *Client) UpdateTask(id string, body map[string]any) (*models.Task, error
 }
 
 // MoveTask moves a task to another project, section, or parent.
-// The body must set exactly one of project_id, section_id, parent_id.
-func (c *Client) MoveTask(id string, body map[string]any) (*models.Task, error) {
-	data, err := c.do("POST", "/tasks/"+id+"/move", body)
+// The request must set exactly one of ProjectID, SectionID, ParentID.
+func (c *Client) MoveTask(ctx context.Context, id string, req MoveTaskRequest) (*models.Task, error) {
+	data, err := c.do(ctx, "POST", "/tasks/"+id+"/move", req)
 	if err != nil {
 		return nil, err
 	}
@@ -162,20 +197,20 @@ func (c *Client) MoveTask(id string, body map[string]any) (*models.Task, error) 
 }
 
 // DeleteTask deletes a task.
-func (c *Client) DeleteTask(id string) error {
-	_, err := c.do("DELETE", "/tasks/"+id, nil)
+func (c *Client) DeleteTask(ctx context.Context, id string) error {
+	_, err := c.do(ctx, "DELETE", "/tasks/"+id, nil)
 	return err
 }
 
 // CloseTask marks a task as complete.
-func (c *Client) CloseTask(id string) error {
-	_, err := c.do("POST", "/tasks/"+id+"/close", nil)
+func (c *Client) CloseTask(ctx context.Context, id string) error {
+	_, err := c.do(ctx, "POST", "/tasks/"+id+"/close", nil)
 	return err
 }
 
 // ReopenTask reopens a completed task.
-func (c *Client) ReopenTask(id string) error {
-	_, err := c.do("POST", "/tasks/"+id+"/reopen", nil)
+func (c *Client) ReopenTask(ctx context.Context, id string) error {
+	_, err := c.do(ctx, "POST", "/tasks/"+id+"/reopen", nil)
 	return err
 }
 
@@ -192,13 +227,13 @@ const maxFindPages = 20
 
 // FindTaskByName searches for a task by partial name matching across all pages.
 // Exact matches take priority over partial matches. Returns nil if no match is found.
-func (c *Client) FindTaskByName(name string) (*models.Task, error) {
+func (c *Client) FindTaskByName(ctx context.Context, name string) (*models.Task, error) {
 	norm := strings.ToLower(normalizeWhitespace(name))
 
 	var partial *models.Task
 	cursor := ""
 	for range maxFindPages {
-		tasks, nextCursor, err := c.getTasksPage("", cursor)
+		tasks, nextCursor, err := c.getTasksPage(ctx, "", cursor)
 		if err != nil {
 			return nil, err
 		}

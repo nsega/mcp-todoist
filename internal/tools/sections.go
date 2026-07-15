@@ -49,7 +49,7 @@ func registerSectionTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_get_sections",
 		Description: "List sections, optionally filtered by project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input GetSectionsInput) (*mcp.CallToolResult, GetSectionsOutput, error) {
-		sections, err := c.GetSections(input.ProjectID)
+		sections, err := c.GetSections(ctx, input.ProjectID)
 		if err != nil {
 			return nil, GetSectionsOutput{}, err
 		}
@@ -71,15 +71,11 @@ func registerSectionTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_create_section",
 		Description: "Create a new section in a Todoist project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CreateSectionInput) (*mcp.CallToolResult, CreateSectionOutput, error) {
-		body := map[string]any{
-			"name":       input.Name,
-			"project_id": input.ProjectID,
-		}
+		createReq := todoist.CreateSectionRequest{Name: input.Name, ProjectID: input.ProjectID}
 		if input.Order > 0 {
-			body["section_order"] = input.Order
+			createReq.SectionOrder = new(input.Order)
 		}
-
-		sec, err := c.CreateSection(body)
+		sec, err := c.CreateSection(ctx, createReq)
 		if err != nil {
 			return nil, CreateSectionOutput{Success: false, Message: err.Error()}, err
 		}
@@ -92,8 +88,7 @@ func registerSectionTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_update_section",
 		Description: "Update an existing section name",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateSectionInput) (*mcp.CallToolResult, UpdateSectionOutput, error) {
-		body := map[string]any{"name": input.Name}
-		sec, err := c.UpdateSection(input.SectionID, body)
+		sec, err := c.UpdateSection(ctx, input.SectionID, todoist.UpdateSectionRequest{Name: input.Name})
 		if err != nil {
 			return nil, UpdateSectionOutput{Success: false, Message: err.Error()}, err
 		}
@@ -106,7 +101,7 @@ func registerSectionTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_delete_section",
 		Description: "Delete a section from a Todoist project",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input DeleteSectionInput) (*mcp.CallToolResult, DeleteSectionOutput, error) {
-		if err := c.DeleteSection(input.SectionID); err != nil {
+		if err := c.DeleteSection(ctx, input.SectionID); err != nil {
 			return nil, DeleteSectionOutput{Success: false, Message: err.Error()}, err
 		}
 		msg := fmt.Sprintf("Successfully deleted section: %s", input.SectionID)

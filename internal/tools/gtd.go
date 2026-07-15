@@ -68,7 +68,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		Description: "Get all inbox tasks grouped by age (today, this week, older) for GTD inbox processing",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input InboxReviewInput) (*mcp.CallToolResult, InboxReviewOutput, error) {
 		// Find inbox project.
-		projects, err := c.GetProjects()
+		projects, err := c.GetProjects(ctx)
 		if err != nil {
 			return nil, InboxReviewOutput{}, err
 		}
@@ -85,7 +85,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 			return textResult(msg, true), InboxReviewOutput{Success: false, Message: msg}, nil
 		}
 
-		tasks, err := c.GetTasks(inboxID)
+		tasks, err := c.GetTasks(ctx, inboxID)
 		if err != nil {
 			return nil, InboxReviewOutput{}, err
 		}
@@ -142,12 +142,12 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_weekly_review",
 		Description: "Comprehensive weekly review: projects with task counts, overdue tasks, tasks with no due date",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input WeeklyReviewInput) (*mcp.CallToolResult, WeeklyReviewOutput, error) {
-		projects, err := c.GetProjects()
+		projects, err := c.GetProjects(ctx)
 		if err != nil {
 			return nil, WeeklyReviewOutput{}, err
 		}
 
-		allTasks, err := c.GetTasks("")
+		allTasks, err := c.GetTasks(ctx, "")
 		if err != nil {
 			return nil, WeeklyReviewOutput{}, err
 		}
@@ -159,7 +159,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		}
 
 		// Overdue tasks.
-		overdueTasks, err := c.GetTasksByFilter("overdue")
+		overdueTasks, err := c.GetTasksByFilter(ctx, "overdue")
 		if err != nil {
 			overdueTasks = nil // non-fatal
 		}
@@ -213,7 +213,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_move_task",
 		Description: "Move a task to a different project, section, or parent. Set exactly one of project_id, section_id, parent_id.",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input MoveTaskInput) (*mcp.CallToolResult, MoveTaskOutput, error) {
-		id, originalName, err := resolveTaskID(c, input.TaskID, input.TaskName)
+		id, originalName, err := resolveTaskID(ctx, c, input.TaskID, input.TaskName)
 		if err != nil {
 			return nil, MoveTaskOutput{Success: false, Message: err.Error()}, err
 		}
@@ -222,18 +222,18 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 			return textResult(msg, true), MoveTaskOutput{Success: false, Message: msg}, nil
 		}
 
-		body := map[string]any{}
+		moveReq := todoist.MoveTaskRequest{}
 		dests := 0
 		if input.ProjectID != "" {
-			body["project_id"] = input.ProjectID
+			moveReq.ProjectID = new(input.ProjectID)
 			dests++
 		}
 		if input.SectionID != "" {
-			body["section_id"] = input.SectionID
+			moveReq.SectionID = new(input.SectionID)
 			dests++
 		}
 		if input.ParentID != "" {
-			body["parent_id"] = input.ParentID
+			moveReq.ParentID = new(input.ParentID)
 			dests++
 		}
 		if dests != 1 {
@@ -241,7 +241,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 			return textResult(msg, true), MoveTaskOutput{Success: false, Message: msg}, nil
 		}
 
-		_, err = c.MoveTask(id, body)
+		_, err = c.MoveTask(ctx, id, moveReq)
 		if err != nil {
 			return nil, MoveTaskOutput{Success: false, Message: err.Error()}, err
 		}
@@ -271,27 +271,27 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		var lines []string
 
 		for _, item := range input.Tasks {
-			body := map[string]any{"content": item.Content}
+			createReq := todoist.CreateTaskRequest{Content: item.Content}
 			if item.Description != "" {
-				body["description"] = item.Description
+				createReq.Description = new(item.Description)
 			}
 			if item.DueString != "" {
-				body["due_string"] = item.DueString
+				createReq.DueString = new(item.DueString)
 			}
 			if item.Priority > 0 && item.Priority <= 4 {
-				body["priority"] = item.Priority
+				createReq.Priority = new(item.Priority)
 			}
 			if item.ProjectID != "" {
-				body["project_id"] = item.ProjectID
+				createReq.ProjectID = new(item.ProjectID)
 			}
 			if item.SectionID != "" {
-				body["section_id"] = item.SectionID
+				createReq.SectionID = new(item.SectionID)
 			}
 			if len(item.Labels) > 0 {
-				body["labels"] = item.Labels
+				createReq.Labels = item.Labels
 			}
 
-			task, err := c.CreateTask(body)
+			task, err := c.CreateTask(ctx, createReq)
 			if err != nil {
 				failed++
 				lines = append(lines, fmt.Sprintf("FAILED: %s — %s", item.Content, err.Error()))
