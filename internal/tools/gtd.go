@@ -197,7 +197,7 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_move_task",
 		Description: "Move a task to a different project, section, or parent. Set exactly one of project_id, section_id, parent_id.",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input MoveTaskInput) (*mcp.CallToolResult, ActionOutput, error) {
-		id, originalName, err := resolveTaskID(ctx, c, input.TaskID, input.TaskName)
+		id, label, err := resolveTask(ctx, c, input.TaskID, input.TaskName)
 		if err != nil {
 			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
@@ -230,10 +230,6 @@ func registerGTDTools(s *mcp.Server, c *todoist.Client) {
 			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
 
-		label := originalName
-		if label == "" {
-			label = id
-		}
 		msg := fmt.Sprintf("Successfully moved task \"%s\"", label)
 		switch {
 		case input.ProjectID != "":

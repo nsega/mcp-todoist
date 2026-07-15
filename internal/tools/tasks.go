@@ -77,6 +77,39 @@ func resolveTaskID(ctx context.Context, c *todoist.Client, id, name string) (str
 	return task.ID, task.Content, nil
 }
 
+// resolveTask resolves a task by ID or name and returns a display label
+// (the matched task name, falling back to the ID). taskID is "" when a
+// name search found nothing.
+func resolveTask(ctx context.Context, c *todoist.Client, id, name string) (taskID, label string, err error) {
+	taskID, originalName, err := resolveTaskID(ctx, c, id, name)
+	if err != nil || taskID == "" {
+		return taskID, "", err
+	}
+	label = originalName
+	if label == "" {
+		label = taskID
+	}
+	return taskID, label, nil
+}
+
+// runTaskAction runs the shared resolve, not-found, act, report flow for
+// task tools whose success message is "Successfully <verb> task: ...".
+func runTaskAction(ctx context.Context, c *todoist.Client, id, name, verb string, action func(context.Context, string) error) (*mcp.CallToolResult, ActionOutput, error) {
+	taskID, label, err := resolveTask(ctx, c, id, name)
+	if err != nil {
+		return nil, ActionOutput{Success: false, Message: err.Error()}, err
+	}
+	if taskID == "" {
+		msg := fmt.Sprintf("Could not find a task matching \"%s\"", name)
+		return textResult(msg, true), ActionOutput{Success: false, Message: msg}, nil
+	}
+	if err := action(ctx, taskID); err != nil {
+		return nil, ActionOutput{Success: false, Message: err.Error()}, err
+	}
+	msg := fmt.Sprintf("Successfully %s task: \"%s\"", verb, label)
+	return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
+}
+
 // --- registrations ---
 
 func registerTaskTools(s *mcp.Server, c *todoist.Client) {
@@ -192,7 +225,7 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_update_task",
 		Description: "Update an existing task in Todoist by task_id or by searching by name",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input UpdateTaskInput) (*mcp.CallToolResult, ActionOutput, error) {
-		id, originalName, err := resolveTaskID(ctx, c, input.TaskID, input.TaskName)
+		id, label, err := resolveTask(ctx, c, input.TaskID, input.TaskName)
 		if err != nil {
 			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
@@ -229,10 +262,6 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 			return nil, ActionOutput{Success: false, Message: err.Error()}, err
 		}
 
-		label := originalName
-		if label == "" {
-			label = id
-		}
 		msg := fmt.Sprintf("Task \"%s\" updated:\nNew Title: %s", label, updated.Content)
 		if updated.Description != "" {
 			msg += fmt.Sprintf("\nNew Description: %s", updated.Description)
@@ -251,74 +280,20 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 		Name:        "todoist_delete_task",
 		Description: "Delete a task from Todoist by task_id or by searching by name",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input DeleteTaskInput) (*mcp.CallToolResult, ActionOutput, error) {
-		id, originalName, err := resolveTaskID(ctx, c, input.TaskID, input.TaskName)
-		if err != nil {
-			return nil, ActionOutput{Success: false, Message: err.Error()}, err
-		}
-		if id == "" {
-			msg := fmt.Sprintf("Could not find a task matching \"%s\"", input.TaskName)
-			return textResult(msg, true), ActionOutput{Success: false, Message: msg}, nil
-		}
-
-		if err := c.DeleteTask(ctx, id); err != nil {
-			return nil, ActionOutput{Success: false, Message: err.Error()}, err
-		}
-
-		label := originalName
-		if label == "" {
-			label = id
-		}
-		msg := fmt.Sprintf("Successfully deleted task: \"%s\"", label)
-		return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
+		return runTaskAction(ctx, c, input.TaskID, input.TaskName, "deleted", c.DeleteTask)
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_complete_task",
 		Description: "Mark a task as complete by task_id or by searching by name",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input CompleteTaskInput) (*mcp.CallToolResult, ActionOutput, error) {
-		id, originalName, err := resolveTaskID(ctx, c, input.TaskID, input.TaskName)
-		if err != nil {
-			return nil, ActionOutput{Success: false, Message: err.Error()}, err
-		}
-		if id == "" {
-			msg := fmt.Sprintf("Could not find a task matching \"%s\"", input.TaskName)
-			return textResult(msg, true), ActionOutput{Success: false, Message: msg}, nil
-		}
-
-		if err := c.CloseTask(ctx, id); err != nil {
-			return nil, ActionOutput{Success: false, Message: err.Error()}, err
-		}
-
-		label := originalName
-		if label == "" {
-			label = id
-		}
-		msg := fmt.Sprintf("Successfully completed task: \"%s\"", label)
-		return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
+		return runTaskAction(ctx, c, input.TaskID, input.TaskName, "completed", c.CloseTask)
 	})
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "todoist_reopen_task",
 		Description: "Reopen a completed task by task_id or by searching by name",
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input ReopenTaskInput) (*mcp.CallToolResult, ActionOutput, error) {
-		id, originalName, err := resolveTaskID(ctx, c, input.TaskID, input.TaskName)
-		if err != nil {
-			return nil, ActionOutput{Success: false, Message: err.Error()}, err
-		}
-		if id == "" {
-			msg := fmt.Sprintf("Could not find a task matching \"%s\"", input.TaskName)
-			return textResult(msg, true), ActionOutput{Success: false, Message: msg}, nil
-		}
-
-		if err := c.ReopenTask(ctx, id); err != nil {
-			return nil, ActionOutput{Success: false, Message: err.Error()}, err
-		}
-
-		label := originalName
-		if label == "" {
-			label = id
-		}
-		msg := fmt.Sprintf("Successfully reopened task: \"%s\"", label)
-		return textResult(msg, false), ActionOutput{Success: true, Message: msg}, nil
+		return runTaskAction(ctx, c, input.TaskID, input.TaskName, "reopened", c.ReopenTask)
 	})
 }
