@@ -32,15 +32,15 @@ type GetTasksInput struct {
 }
 
 type UpdateTaskInput struct {
-	TaskID       string   `json:"task_id,omitempty" jsonschema:"Task ID to update (preferred over task_name)"`
-	TaskName     string   `json:"task_name,omitempty" jsonschema:"Name/content of the task to search for and update"`
-	Content      string   `json:"content,omitempty" jsonschema:"New content/title for the task (optional)"`
-	Description  string   `json:"description,omitempty" jsonschema:"New description for the task (optional)"`
-	DueString    string   `json:"due_string,omitempty" jsonschema:"New due date in natural language (optional)"`
-	Priority     int      `json:"priority,omitempty" jsonschema:"New priority level from 1 (normal) to 4 (urgent) (optional)"`
-	Labels       []string `json:"labels,omitempty" jsonschema:"New labels for the task (optional)"`
-	AssigneeID   string   `json:"assignee_id,omitempty" jsonschema:"User ID to assign the task to (optional)"`
-	DeadlineDate string   `json:"deadline_date,omitempty" jsonschema:"New deadline date in YYYY-MM-DD format (optional)"`
+	TaskID       string    `json:"task_id,omitempty" jsonschema:"Task ID to update (preferred over task_name)"`
+	TaskName     string    `json:"task_name,omitempty" jsonschema:"Name/content of the task to search for and update"`
+	Content      string    `json:"content,omitempty" jsonschema:"New content/title for the task (optional)"`
+	Description  *string   `json:"description,omitempty" jsonschema:"New description for the task. An empty string clears it (optional)"`
+	DueString    *string   `json:"due_string,omitempty" jsonschema:"New due date in natural language. An empty string or 'no date' removes the due date (optional)"`
+	Priority     int       `json:"priority,omitempty" jsonschema:"New priority level from 1 (normal) to 4 (urgent) (optional)"`
+	Labels       *[]string `json:"labels,omitempty" jsonschema:"New labels for the task. An empty array removes all labels (optional)"`
+	AssigneeID   string    `json:"assignee_id,omitempty" jsonschema:"User ID to assign the task to (optional)"`
+	DeadlineDate string    `json:"deadline_date,omitempty" jsonschema:"New deadline date in YYYY-MM-DD format (optional)"`
 }
 
 type DeleteTaskInput struct {
@@ -238,17 +238,21 @@ func registerTaskTools(s *mcp.Server, c *todoist.Client) {
 		if input.Content != "" {
 			updateReq.Content = new(input.Content)
 		}
-		if input.Description != "" {
-			updateReq.Description = new(input.Description)
+		if input.Description != nil {
+			updateReq.Description = input.Description
 		}
-		if input.DueString != "" {
-			updateReq.DueString = new(input.DueString)
+		if input.DueString != nil {
+			due := *input.DueString
+			if due == "" {
+				due = "no date" // Todoist's native syntax for removing a due date
+			}
+			updateReq.DueString = new(due)
 		}
 		if input.Priority > 0 && input.Priority <= 4 {
 			updateReq.Priority = new(input.Priority)
 		}
-		if len(input.Labels) > 0 {
-			updateReq.Labels = new(input.Labels)
+		if input.Labels != nil {
+			updateReq.Labels = input.Labels
 		}
 		if input.AssigneeID != "" {
 			updateReq.AssigneeID = new(input.AssigneeID)
