@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.7.3",
+  "checkpoint_id": "980019ef062f",
+  "strategy": "manual-commit",
+  "branch": "feat/stage-5-client-retries",
+  "checkpoints_count": 1,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/98/0019ef062f/0/metadata.json",
+      "transcript": "/98/0019ef062f/0/full.jsonl",
+      "content_hash": "/98/0019ef062f/0/content_hash.txt",
+      "prompt": "/98/0019ef062f/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 170,
+    "cache_creation_tokens": 916959,
+    "cache_read_tokens": 18038461,
+    "output_tokens": 101500,
+    "api_call_count": 88
+  }
+}
