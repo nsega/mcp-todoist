@@ -3,6 +3,7 @@ package todoist
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -75,6 +76,13 @@ func (c *Client) do(ctx context.Context, method, endpoint string, body any) ([]b
 		bodyBytes = data
 	}
 
+	// One idempotency key per logical request, reused across retry
+	// attempts, so a retried POST cannot create a duplicate resource.
+	var requestID string
+	if method == http.MethodPost {
+		requestID = newRequestID()
+	}
+
 	var lastErr error
 	var wait time.Duration
 	for attempt := range maxAttempts {
@@ -94,6 +102,9 @@ func (c *Client) do(ctx context.Context, method, endpoint string, body any) ([]b
 		}
 		req.Header.Set("Authorization", "Bearer "+c.token)
 		req.Header.Set("Content-Type", "application/json")
+		if requestID != "" {
+			req.Header.Set("X-Request-Id", requestID)
+		}
 
 		resp, err := c.httpClient.Do(req)
 		if err != nil {
@@ -118,7 +129,9 @@ func (c *Client) do(ctx context.Context, method, endpoint string, body any) ([]b
 					wait = d
 				}
 			}
-			slog.Debug("retrying todoist request", "status", resp.StatusCode, "attempt", attempt+1, "wait", wait.String())
+			if attempt < maxAttempts-1 {
+				slog.Debug("retrying todoist request", "status", resp.StatusCode, "attempt", attempt+1, "wait", wait)
+			}
 		default:
 			return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(respBody))
 		}
@@ -150,6 +163,19 @@ func parseRetryAfter(h string) (time.Duration, bool) {
 	}
 	d := min(time.Duration(secs)*time.Second, maxRetryAfter)
 	return d, true
+}
+
+// newRequestID returns a random UUID version 4 string for the
+// X-Request-Id idempotency header. crypto/rand.Read is documented to
+// never fail, but if it somehow does the header is simply omitted.
+func newRequestID() string {
+	var b [16]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		return ""
+	}
+	b[6] = (b[6] & 0x0f) | 0x40
+	b[8] = (b[8] & 0x3f) | 0x80
+	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
 }
 
 // sleepCtx waits for d or until ctx is done, whichever comes first.
