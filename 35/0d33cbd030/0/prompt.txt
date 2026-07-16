@@ -1,0 +1,17 @@
+resume it
+
+---
+
+implement it as a small sixth PR.
+
+---
+
+Implement it as a small sixth PR by using gh stack (Read https://github.github.com/gh-stack/)
+
+---
+
+verify the latest chnage is working properly without regression.
+
+---
+
+commit the new .claude/skills/verify recipe
