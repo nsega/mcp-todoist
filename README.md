@@ -1,12 +1,12 @@
 # Todoist MCP Server (Go)
 
 [![Build and Test](https://github.com/nsega/mcp-todoist/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/nsega/mcp-todoist/actions/workflows/build-and-test.yml)
-[![Go Version](https://img.shields.io/badge/Go-1.26.2-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+[![Go Version](https://img.shields.io/badge/Go-1.27.1-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A Model Context Protocol (MCP) server for Todoist, written in Go. This server enables Claude and other MCP clients to interact with your Todoist tasks, projects, sections, labels, and comments using natural language. Includes GTD workflow tools for inbox processing and weekly reviews.
 
-This is a Go rewrite of the original [TypeScript implementation](https://github.com/abhiz123/todoist-mcp-server), built with the official [go-sdk v1.6.1](https://github.com/modelcontextprotocol/go-sdk).
+This is a Go rewrite of the original [TypeScript implementation](https://github.com/abhiz123/todoist-mcp-server), built with the official [go-sdk v1.7.0](https://github.com/modelcontextprotocol/go-sdk).
 
 ## Features
 
@@ -79,7 +79,7 @@ This is a Go rewrite of the original [TypeScript implementation](https://github.
 
 ## Prerequisites
 
-- Go 1.26.2 or later
+- Go 1.27.1 or later
 - A Todoist account
 - Todoist API token
 
@@ -210,6 +210,10 @@ make coverage
 make lint
 ```
 
+Requires [golangci-lint](https://golangci-lint.run/docs/welcome/install/) **v2.13.2 or newer**. Older releases are built against an older Go than this module targets and refuse to run with `can't load config: the Go language version ... is lower than the targeted Go version`. `make lint` checks the installed version and tells you to upgrade rather than failing with that message.
+
+The pin lives in `GOLANGCI_LINT_VERSION` in the `Makefile`, and CI reads it from there, so local and CI linting always use the same version.
+
 ### Running All Checks
 
 ```bash
@@ -273,7 +277,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## Acknowledgments
 
 - Original TypeScript implementation by [abhiz123](https://github.com/abhiz123/todoist-mcp-server)
-- Built with [go-sdk v1.6.1](https://github.com/modelcontextprotocol/go-sdk)
+- Built with [go-sdk v1.7.0](https://github.com/modelcontextprotocol/go-sdk)
 - GitHub Actions and Makefile structure inspired by [mcp-obsidian](https://github.com/nsega/mcp-obsidian)
 
 ## Contributing
