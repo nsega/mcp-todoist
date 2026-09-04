@@ -50,9 +50,12 @@ jobs:
         flags: unittests
         fail_ci_if_error: false
 
+    # `go fix -diff` exits 1 when it has a diff to report, and the default shell
+    # is `bash -e`, so the assignment needs `|| true` or the step dies before it
+    # can print the diff and the annotation.
     - name: Check go fix modernizers
       run: |
-        diff=$(go fix -diff ./... 2>&1)
+        diff=$(go fix -diff ./... 2>&1) || true
         if [ -n "$diff" ]; then
           echo "$diff"
           echo "::error::go fix found unmodernized code. Run 'go fix ./...' and commit the changes."
