@@ -54,9 +54,21 @@ GitHub Actions runs on every push/PR to main:
 - `go build`, `go test -race`, `go vet`, `staticcheck v0.8.1`, `go fix -diff`
 - `golangci-lint v2.13.2` (separate job)
 
-Both jobs read their Go version from `go.mod` via `go-version-file`, so bumping the `go`
-directive is enough. `setup-go` v6+ exports `GOTOOLCHAIN=local`, so tool versions are pinned
-rather than `@latest`. Job names are version-free to keep branch-protection contexts stable.
+Both jobs read their Go version from `go.mod` via `go-version-file`, so the Go version lives
+in one place. `setup-go` v6+ exports `GOTOOLCHAIN=local`, so tool versions are pinned rather
+than `@latest`.
+
+Raising the `go` directive is not sufficient on its own: both tool pins have a floor tied to
+it, because a linter built with an older Go than the module targets refuses to run. Check
+them in the same commit as any Go bump:
+
+- `GOLANGCI_LINT_VERSION` in the `Makefile`, which is canonical. CI reads it via
+  `make print-golangci-lint-version`, so `make lint` and the Lint job cannot drift apart.
+- `STATICCHECK_VERSION` in the workflow.
+
+Job names carry no version, keeping branch-protection contexts stable across upgrades.
+Module and build caching comes from `setup-go` (on by default); do not add an
+`actions/cache` step over `GOMODCACHE`/`GOCACHE`, as it collides with that on restore.
 
 ## Environment
 
