@@ -1,0 +1,34 @@
+/code-review high #21
+
+---
+
+<task-notification>
+<task-id>a14480b7da8fe5ac2</task-id>
+<output-file>/private/tmp/claude-501/-Users-naokisega-src-github-com-nsega-mcp-todoist/26f7e412-1cb0-4c56-a917-c131cf12aeb9/tasks/a14480b7da8fe5ac2.output</output-file>
+<status>completed</status>
+<summary>Agent "/code-review high #21" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>No `ReportFindings` tool is available in this environment (I searched for it), so the findings are stated directly below.
+
+## Review of PR #21 — `chore(deps): upgrade to Go 1.27.1 and go-sdk v1.7.0`
+
+**Verification performed** (not just reading): built and tested locally on go1.27.1 (`go build`, `go vet`, `go test` all pass), `go mod tidy -diff` is empty, `go mod verify` clean, ran `make lint` to exercise the new guard (correctly rejects the locally installed 2.10.1), decoded `action.yml` for `golangci-lint-action@v9`, `setup-go@v7`, and `codecov-action@v7` to confirm every input/output used actually exists, diffed go-sdk v1.6.1 → v1.7.0 (`tool.go`, `server.go`, `shared.go`) for behavior changes affecting this server, and checked live branch protection. CI on the branch is green.
+
+No correctness bugs found in the Go code — the go-sdk delta is additive (new `2026-07-28` revision, looser output-schema validation, new `mrtr.go`/`cache.go`); `negotiateVersion` still caps at `2025-11-25` for `initialize`, so this stdio server's negotiation is unchanged. The handlers' typed `ActionOutput` returns object-rooted schemas, which the v1.7.0 `applySchema` change only relaxes.
+
+### Findings (3, all low)
+
+- `.github/workflows/build-and-test.yml:32` — The manual `actions/cache@v6` step caches `~/go/pkg/mod` and `~/.cache/go-build`, but `actions/setup-go@v7` has `cache: true` by default (confirmed in its `action.yml`) and already restores/saves those exact paths keyed on `go.sum`. Every run now writes two near-identical cache entries under different keys, roughly doubling consumption of the repo's 10 GB cache quota and accelerating eviction of entries the job actually wants. Either set `cache: false` on the setup-go step or delete the manual cache step.
+
+- `CLAUDE.md:57` — "Both jobs read their Go version from `go.mod` via `go-version-file`, so bumping the `go` directive is enough" is contradicted by this very PR. Bumping the `go` directive alone leaves `GOLANGCI_LINT_VERSION` behind, and the Lint job then fails with `can't load config: the Go language version (goX) used to build golangci-lint is lower than the targeted Go version` — exactly the failure the PR description documents. A contributor following this line will bump go.mod and get a red Lint job. The sentence should say the Go version is derived automatically *but* `GOLANGCI_LINT_VERSION` (workflow + Makefile) and `STATICCHECK_VERSION` have a floor tied to it and must be bumped in the same commit.
+
+- `Makefile:96` — `installed=$$(golangci-lint version --short 2&gt;/dev/null)` swallows the failure case. If `version --short` errors or prints nothing (a wrapper script, a golangci-lint v1 install where the flag is `--format short`, an asdf/mise shim), `installed` is empty; `printf '%s\n%s\n' "2.13.2" "" | sort -V | head -1` yields the empty line, so the guard trips and prints `golangci-lint  is too old` with a blank version and a wrong explanation, and `make check` hard-fails at the lint step. Same for a source-built binary reporting `(devel)`, which sorts before any number. Worth guarding with `[ -z "$$installed" ]` and a distinct "could not determine version" message.
+
+### Notes (not findings)
+
+- Dropping the single-value `strategy.matrix` is a net improvement, not a risk: live branch protection on `main` requires the contexts `Build and Test` and `Lint`, and with the matrix the test job reported as `Build and Test (1.26.2)`. This PR makes the reported context names match the required ones for the first time.
+- Pinning `staticcheck@v0.8.1` instead of `@latest` is correct given `GOTOOLCHAIN=local`, and the workflow comment about setup-go exporting it is accurate (verified in `setup-go` `src/main.ts`, `setGoToolchain()`).
+- The two `GOLANGCI_LINT_VERSION` pins (workflow with `v`, Makefile without) are kept in sync only by a comment; a `make ci-versions` check or reading the Makefile value in the workflow would remove the drift risk. Minor, mentioned for completeness.
+- The uncommitted `.entire/.gitignore` change (adds `redactors/local/`) is unrelated to this PR and harmless.</result>
+<usage><subagent_tokens>95195</subagent_tokens><tool_uses>32</tool_uses><duration_ms>322069</duration_ms></usage>
+</task-notification>
