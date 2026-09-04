@@ -1,0 +1,43 @@
+/code-review high #21
+
+---
+
+<task-notification>
+<task-id>aff3bc5443119985a</task-id>
+<output-file>/private/tmp/claude-501/-Users-naokisega-src-github-com-nsega-mcp-todoist/26f7e412-1cb0-4c56-a917-c131cf12aeb9/tasks/aff3bc5443119985a.output</output-file>
+<status>completed</status>
+<summary>Agent "/code-review high #21" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I attempted to submit via `ReportFindings`, but that tool is not available in this environment (`ToolSearch` returns no such deferred tool), so the findings are stated inline below.
+
+## Scope
+
+PR #21 (`chore/upgrade-go-1.27-and-deps` → `main`): Go 1.26.2 → 1.27.1, go-sdk v1.6.1 → v1.7.0, transitive dep bumps, and five GitHub Action major bumps. Plus one uncommitted working-tree change (`.entire/.gitignore` adds `redactors/local/`) which is trivially fine. **No Go source files changed**, so there are no logic-correctness findings.
+
+## Verification I ran (all of the PR's claims hold)
+
+- `go build ./...`, `go vet ./...`, `gofmt -l .`, `go fix -diff ./...`, `go test -race ./...` — all clean on go1.27.1.
+- `go mod tidy` → zero diff to `go.mod`/`go.sum`; `go mod verify` → all modules verified. `x/sync` and `x/time` are genuinely required and correctly marked `// indirect`.
+- Downloaded the real `golangci-lint v2.13.2` release binary (built with **go1.27.0**) and ran it: `0 issues`. The go1.27.0-vs-1.27.1 gap does *not* trip the build-version guard, so the pinned lint version is actually safe.
+- `go install honnef.co/go/tools/cmd/staticcheck@latest` → 2026.2.1 (0.8.1), runs clean; its `go.mod` requires `go 1.26.0`.
+- Checked `action.yml` for every bumped action: `golangci-lint-action@v9` still has `args`; `codecov-action@v7` still has `files`/`flags`/`fail_ci_if_error`; `cache@v6` and `checkout@v7` inputs unchanged. No renamed/removed inputs. All are Node 24 (fine on `ubuntu-latest`).
+- Live stdio smoke test of the rebuilt binary: `initialize` negotiates `2025-06-18`, `serverInfo` = `todoist-mcp-server` 1.0.0, `tools/list` returns 29 tools all with `inputSchema`. The go-sdk v1.7.0 `hintomitempty` default change is a non-issue here because `Tool.Annotations` is `*ToolAnnotations` and this repo never sets it. New `ttlMs: 0` / `cacheScope: "public"` fields appear on list results; `ttlMs: 0` means no caching hint, so behavior is unchanged.
+
+## Findings (2, both low)
+
+**`.github/workflows/build-and-test.yml:89` — `make lint` / `make check` now hard-fail locally for anyone on golangci-lint &lt; v2.13, and nothing in the repo says so.**
+Reproduced with the golangci-lint currently installed on this machine (v2.10.1, built with go1.26.0):
+```
+Error: can't load config: the Go language version (go1.26) used to build golangci-lint
+is lower than the targeted Go version (1.27.1)
+```
+CI was updated to v2.13.2, but `Makefile:lint` only guards `command -v golangci-lint` and falls back to `fmt vet` when it is *absent*; when it is present but too old, `make check` exits non-zero with that opaque config error. README's Prerequisites lists only Go 1.27.1. Suggest pinning the required golangci-lint version in the README/Makefile (CLAUDE.md's CI section already says v2.13.2).
+
+**`.github/workflows/build-and-test.yml:22` (and `:82`) — `actions/setup-go@v5 → v7` silently exports `GOTOOLCHAIN=local`, removing CI's toolchain self-healing.**
+setup-go v6.0.0's breaking change ("Improve toolchain handling", PR #460) calls `setGoToolchain()` unconditionally, doing `core.exportVariable('GOTOOLCHAIN', 'local')` so every later step inherits it (confirmed in `src/main.ts` on the `v7` tag). Two consequences, neither breaking today but both new with this diff:
+- `Run staticcheck` (line 70) does `go install honnef.co/go/tools/cmd/staticcheck@latest` — unpinned. Today go-tools requires `go 1.26.0`, so it builds. The day upstream bumps its `go` directive past 1.27.1, that step fails hard on a commit that touched nothing, whereas under setup-go v5 (`GOTOOLCHAIN=auto`) Go would have fetched a newer toolchain transparently. Pinning staticcheck to a known version would remove the drift.
+- `go.mod`'s `go 1.27.1` must now exactly match the two hard-coded `'1.27.1'` workflow pins (lines 15 and 84). A future `go.mod` bump that misses either pin fails with `go.mod requires go &gt;= X (running go 1.27.1)` instead of quietly working. Using `go-version-file: go.mod` in both jobs would keep them in lockstep.
+
+No blocking issues. The upgrade is correct and independently reproducible.</result>
+<usage><subagent_tokens>93783</subagent_tokens><tool_uses>35</tool_uses><duration_ms>340599</duration_ms></usage>
+</task-notification>
