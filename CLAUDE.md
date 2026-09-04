@@ -3,7 +3,7 @@
 ## Project Overview
 
 Go MCP server for Todoist. Communicates via stdio (stdout = MCP protocol, stderr = logs).
-Built with [go-sdk v1.6.1](https://github.com/modelcontextprotocol/go-sdk).
+Built with [go-sdk v1.7.0](https://github.com/modelcontextprotocol/go-sdk).
 
 ## Architecture
 
@@ -52,9 +52,9 @@ Lowercase log messages. Pass errors as structured attributes: `slog.Error("msg",
 
 GitHub Actions runs on every push/PR to main:
 - `go build`, `go test -race`, `go vet`, `staticcheck`, `go fix -diff`
-- `golangci-lint v2.10.1` (separate job)
+- `golangci-lint v2.13.2` (separate job)
 
 ## Environment
 
 - Requires `TODOIST_API_TOKEN` env var
-- Go 1.26.2+
+- Go 1.27.1+
