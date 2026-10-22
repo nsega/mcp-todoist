@@ -31,6 +31,7 @@ func main() {
 
 	slog.Info("todoist MCP server starting", "version", "1.0.0")
 
+	// SDK default inbound frame cap kept on purpose; set MaxLineLength here to change it.
 	if err := server.Run(context.Background(), &mcp.StdioTransport{}); err != nil {
 		slog.Error("server error", "error", err)
 		os.Exit(1)
