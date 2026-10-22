@@ -31,11 +31,10 @@ func main() {
 
 	slog.Info("todoist MCP server starting", "version", "1.0.0")
 
-	// The SDK caps inbound JSON-RPC frames and ends the session on overflow. Its default
-	// is set explicitly so the choice is visible: no legitimate call to this server
-	// approaches it, and the cap bounds memory per frame. A negative value disables it.
-	transport := &mcp.StdioTransport{MaxLineLength: mcp.DefaultMaxLineLength}
-	if err := server.Run(context.Background(), transport); err != nil {
+	// The SDK's default inbound frame cap is kept: no legitimate call to this server
+	// approaches it, and it bounds memory per frame. Overflow ends the session, and with
+	// it this process; changing the cap means setting MaxLineLength here.
+	if err := server.Run(context.Background(), &mcp.StdioTransport{}); err != nil {
 		slog.Error("server error", "error", err)
 		os.Exit(1)
 	}
