@@ -210,9 +210,7 @@ make coverage
 make lint
 ```
 
-Requires [golangci-lint](https://golangci-lint.run/docs/welcome/install/) **v2.15.0 or newer**, the version CI uses; `make lint` enforces it so local and CI lint match, and tells you to upgrade rather than failing mid-run. The comment above `GOLANGCI_LINT_VERSION` in the `Makefile` explains why the pin moves with the Go version.
-
-The pin lives in `GOLANGCI_LINT_VERSION` in the `Makefile`, and CI reads it from there, so local and CI linting always use the same version.
+Requires [golangci-lint](https://golangci-lint.run/docs/welcome/install/) **v2.15.0 or newer**. The pin lives in `GOLANGCI_LINT_VERSION` in the `Makefile`, CI runs exactly that version, and `make lint` checks you have at least it (a newer local release may lint differently) and tells you to upgrade rather than failing mid-run. The comment above the pin explains why it moves with the Go version.
 
 ### Running All Checks
 
