@@ -31,9 +31,7 @@ func main() {
 
 	slog.Info("todoist MCP server starting", "version", "1.0.0")
 
-	// The SDK's default inbound frame cap is kept: no legitimate call to this server
-	// approaches it, and it bounds memory per frame. Overflow ends the session, and with
-	// it this process; changing the cap means setting MaxLineLength here.
+	// SDK default inbound frame cap kept on purpose; set MaxLineLength here to change it.
 	if err := server.Run(context.Background(), &mcp.StdioTransport{}); err != nil {
 		slog.Error("server error", "error", err)
 		os.Exit(1)
