@@ -59,8 +59,9 @@ in one place. `setup-go` v6+ exports `GOTOOLCHAIN=local`, so tool versions are p
 than `@latest`.
 
 Raising the `go` directive is not sufficient on its own: both tool pins have a floor tied to
-it, because a linter built with an older Go than the module targets refuses to run. Check
-them in the same commit as any Go bump:
+the Go toolchain, because the linters embed golang.org/x/tools' export-data reader and a Go
+release that changes the export data format (go1.27.3 did) makes older releases fail with
+spurious typecheck errors. Check them in the same commit as any Go bump:
 
 - `GOLANGCI_LINT_VERSION` in the `Makefile`, which is canonical. CI reads it via
   `make print-golangci-lint-version`, so `make lint` and the Lint job cannot drift apart.
