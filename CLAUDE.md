@@ -51,8 +51,8 @@ Lowercase log messages. Pass errors as structured attributes: `slog.Error("msg",
 ## CI
 
 GitHub Actions runs on every push/PR to main:
-- `go build`, `go test -race`, `go vet`, `staticcheck v0.8.1`, `go fix -diff`
-- `golangci-lint v2.13.2` (separate job)
+- `go build`, `go test -race`, `go vet`, `staticcheck v0.8.2`, `go fix -diff`
+- `golangci-lint v2.15.0` (separate job)
 
 Both jobs read their Go version from `go.mod` via `go-version-file`, so the Go version lives
 in one place. `setup-go` v6+ exports `GOTOOLCHAIN=local`, so tool versions are pinned rather

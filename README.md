@@ -1,7 +1,7 @@
 # Todoist MCP Server (Go)
 
 [![Build and Test](https://github.com/nsega/mcp-todoist/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/nsega/mcp-todoist/actions/workflows/build-and-test.yml)
-[![Go Version](https://img.shields.io/badge/Go-1.27.3-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/nsega/mcp-todoist)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A Model Context Protocol (MCP) server for Todoist, written in Go. This server enables Claude and other MCP clients to interact with your Todoist tasks, projects, sections, labels, and comments using natural language. Includes GTD workflow tools for inbox processing and weekly reviews.
@@ -210,7 +210,7 @@ make coverage
 make lint
 ```
 
-Requires [golangci-lint](https://golangci-lint.run/docs/welcome/install/) **v2.13.2 or newer**. Older releases are built against an older Go than this module targets and refuse to run with `can't load config: the Go language version ... is lower than the targeted Go version`. `make lint` checks the installed version and tells you to upgrade rather than failing with that message.
+Requires [golangci-lint](https://golangci-lint.run/docs/welcome/install/) **v2.15.0 or newer**. Releases older than the pin may not read the export data written by the Go toolchain in `go.mod` (go1.27.3 writes export data version 5; 2.13.x fails on it), which surfaces as spurious `typecheck` errors from `golangci-lint run`. `make lint` checks the installed version and tells you to upgrade rather than failing that way.
 
 The pin lives in `GOLANGCI_LINT_VERSION` in the `Makefile`, and CI reads it from there, so local and CI linting always use the same version.
 
