@@ -31,10 +31,9 @@ func main() {
 
 	slog.Info("todoist MCP server starting", "version", "1.0.0")
 
-	// go-sdk v1.8.0 caps inbound JSON-RPC frames and ends the session on overflow. The
-	// SDK default (16 MiB) is set explicitly so the choice is visible and compile-checked:
-	// no legitimate call to this server approaches that size, and the cap bounds memory
-	// per frame.
+	// The SDK caps inbound JSON-RPC frames and ends the session on overflow. Its default
+	// is set explicitly so the choice is visible: no legitimate call to this server
+	// approaches it, and the cap bounds memory per frame. A negative value disables it.
 	transport := &mcp.StdioTransport{MaxLineLength: mcp.DefaultMaxLineLength}
 	if err := server.Run(context.Background(), transport); err != nil {
 		slog.Error("server error", "error", err)
