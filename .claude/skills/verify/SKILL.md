@@ -9,6 +9,10 @@ The surface is the stdio MCP binary. The client hard-codes
 `https://api.todoist.com`, and macOS Go ignores `SSL_CERT_FILE`, so wire
 observation needs a Linux container with a fake TLS Todoist.
 
+## Static checks first
+
+Run `make check` before the runtime recipe. It runs golangci-lint and staticcheck at the versions pinned in the `Makefile`, installing them into the git-ignored `bin/` on first use, and fails if either linter can't be installed or run.
+
 ## Recipe (worked 2026-07-15)
 
 1. Build linux binary from repo root: `CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o $SCRATCH/mcp-todoist-linux .`

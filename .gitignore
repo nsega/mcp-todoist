@@ -32,6 +32,9 @@ go.work.sum
 # Build directory
 build/
 
+# Pinned linters installed by make lint and make staticcheck
+/bin/
+
 # Claude Code – track shared settings, ignore local
 !.claude/
 .claude/settings.local.json
