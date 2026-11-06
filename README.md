@@ -33,7 +33,7 @@ This is a Go rewrite of the original [TypeScript implementation](https://github.
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
-| `todoist_get_projects` | List all projects | — |
+| `todoist_get_projects` | List all projects | None |
 | `todoist_get_project` | Get a single project | `project_id` |
 | `todoist_create_project` | Create a project | `name`, `parent_id`, `color`, `is_favorite`, `view_style` |
 | `todoist_update_project` | Update a project | `project_id`, `name`, `color`, `is_favorite` |
@@ -54,7 +54,7 @@ This is a Go rewrite of the original [TypeScript implementation](https://github.
 
 | Tool | Description | Key Parameters |
 |------|-------------|----------------|
-| `todoist_get_labels` | List all labels | — |
+| `todoist_get_labels` | List all labels | None |
 | `todoist_create_label` | Create a label | `name`, `color`, `is_favorite` |
 | `todoist_update_label` | Update a label | `label_id`, `name`, `color` |
 | `todoist_delete_label` | Delete a label | `label_id` |
@@ -208,15 +208,18 @@ make coverage
 
 ```bash
 make lint
+make staticcheck
 ```
 
-Requires [golangci-lint](https://golangci-lint.run/docs/welcome/install/) **v2.15.0 or newer**. The pin lives in `GOLANGCI_LINT_VERSION` in the `Makefile`, CI runs exactly that version, and `make lint` checks you have at least it (a newer local release may lint differently) and tells you to upgrade rather than failing mid-run. The comment above the pin explains why it moves with the Go version.
+These run golangci-lint and staticcheck at the versions pinned in the `Makefile`, which is the only place they live. Each target installs its pinned linter into a git-ignored `bin/` on first use, and reinstalls it when the pin or your Go version changes, so nothing needs installing by hand and a linter already on your `PATH` is ignored. The first run needs access to the Go module proxy, and a failed install fails the target. The comment above the pins explains why they move with the Go version.
 
 ### Running All Checks
 
 ```bash
 make check
 ```
+
+Runs `fmt`, `vet`, `lint`, `staticcheck` and `test`. CI runs the same `make lint` and `make staticcheck` targets.
 
 ### Building for Multiple Platforms
 

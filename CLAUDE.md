@@ -25,8 +25,9 @@ internal/models/       → Shared data types
 ```bash
 make build       # Build to build/mcp-todoist
 make test        # Run tests with -race
-make lint        # golangci-lint
-make check       # fmt + vet + lint + test
+make lint        # Pinned golangci-lint
+make staticcheck # Pinned staticcheck
+make check       # fmt + vet + lint + staticcheck + test
 make coverage    # Tests with HTML coverage report
 ```
 
@@ -34,37 +35,38 @@ make coverage    # Tests with HTML coverage report
 
 ### Logging
 
-Uses `log/slog` with `JSONHandler` writing to `os.Stderr`. No `log.Fatal` — use `slog.Error` + `os.Exit(1)`.
+Uses `log/slog` with `JSONHandler` writing to `os.Stderr`. No `log.Fatal`: use `slog.Error` + `os.Exit(1)`.
 Lowercase log messages. Pass errors as structured attributes: `slog.Error("msg", "error", err)`.
 
 ### Error Handling
 
-- API client methods return `(T, error)` — no panics
+- API client methods return `(T, error)` and never panic
 - Tool handlers return MCP error results, never crash the server
 
 ### Testing
 
 - Tests use `net/http/httptest` for API client testing
-- Test assertions use `testing.T.Fatal`/`Fatalf` — no external test libraries
+- Test assertions use `testing.T.Fatal`/`Fatalf`, with no external test libraries
 - All tests run with `-race` flag
 
 ## CI
 
 GitHub Actions runs on every push/PR to main:
-- `go build`, `go test -race`, `go vet`, `staticcheck v0.8.2`, `go fix -diff`
-- `golangci-lint v2.15.0` (separate job)
+- `go build`, `go test -race`, `go vet`, `make staticcheck`, `go fix -diff`
+- `make lint` (separate job)
 
 Both jobs read their Go version from `go.mod` via `go-version-file`, so the Go version lives
 in one place. `setup-go` v6+ exports `GOTOOLCHAIN=local`, so tool versions are pinned rather
 than `@latest`.
 
+The `Makefile` is the only place the linter versions live (`GOLANGCI_LINT_VERSION` and
+`STATICCHECK_VERSION`). `make lint` and `make staticcheck` install exactly those versions into
+the git-ignored `bin/` and run them from there, and CI runs the same targets, so local and CI
+cannot diverge. A failed install fails the target; there is no fallback.
+
 Raising the `go` directive is not sufficient on its own: both tool pins have a floor tied to
 the Go toolchain (the comment above `GOLANGCI_LINT_VERSION` in the Makefile is the canonical
-explanation). Check them in the same commit as any Go bump:
-
-- `GOLANGCI_LINT_VERSION` in the `Makefile`, which is canonical. CI reads it via
-  `make print-golangci-lint-version`, so `make lint` and the Lint job cannot drift apart.
-- `STATICCHECK_VERSION` in the workflow.
+explanation). Check them in the same commit as any Go bump.
 
 Job names carry no version, keeping branch-protection contexts stable across upgrades.
 Module and build caching comes from `setup-go` (on by default); do not add an
